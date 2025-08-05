@@ -1,0 +1,52 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "close": "Fermer",
+    "yes": "Oui",
+    "no": "Non",
+    "actions": "Actions"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "email": "Adresse email",
+    "password": "Mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "loginSuccess": "Connexion réussie",
+    "loginError": "Email ou mot de passe incorrect"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "services": "Services",
+    "news": "Actualités",
+    "contact": "Contact",
+    "dashboard": "Tableau de bord",
+    "requests": "Demandes",
+    "complaints": "Réclamations",
+    "profile": "Profil",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "recentRequests": "Demandes récentes",
+    "quickActions": "Actions rapides",
+    "statistics": "Statistiques"
+  },
+  "requests": {
+    "myRequests": "Mes demandes",
+    "newRequest": "Nouvelle demande",
+    "pending": "En attente",
+    "inProgress": "En cours",
+    "completed": "Terminée",
+    "approved": "Approuvée",
+    "rejected": "Rejetée"
+  }
+}

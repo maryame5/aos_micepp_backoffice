@@ -1,0 +1,52 @@
+{
+  "common": {
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث",
+    "filter": "تصفية",
+    "close": "إغلاق",
+    "yes": "نعم",
+    "no": "لا",
+    "actions": "الإجراءات"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "rememberMe": "تذكرني",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "loginSuccess": "تم تسجيل الدخول بنجاح",
+    "loginError": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "services": "الخدمات",
+    "news": "الأخبار",
+    "contact": "اتصل بنا",
+    "dashboard": "لوحة التحكم",
+    "requests": "الطلبات",
+    "complaints": "الشكاوى",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات"
+  },
+  "dashboard": {
+    "welcome": "مرحباً",
+    "recentRequests": "الطلبات الحديثة",
+    "quickActions": "الإجراءات السريعة",
+    "statistics": "الإحصائيات"
+  },
+  "requests": {
+    "myRequests": "طلباتي",
+    "newRequest": "طلب جديد",
+    "pending": "في الانتظار",
+    "inProgress": "قيد المعالجة",
+    "completed": "مكتمل",
+    "approved": "موافق عليه",
+    "rejected": "مرفوض"
+  }
+}
