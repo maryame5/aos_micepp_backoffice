@@ -39,7 +39,8 @@
             "tsConfig": "tsconfig.app.json",
             "stylePreprocessorOptions": {
               "includePaths": ["src/styles"]
-            }
+            },
+            "inlineStyleLanguage": "css"
           }
         },
         "serve": {

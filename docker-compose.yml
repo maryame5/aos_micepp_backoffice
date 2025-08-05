@@ -44,7 +44,8 @@ services:
       - mail-dev
     networks:
       - aos_network
-    restart: unless-stopped
+ 
+   
 
   frontend:
     container_name: aos-frontend
@@ -56,7 +57,7 @@ services:
       - backend
     networks:
       - aos_network
-    restart: unless-stopped
+
 
 networks:
   aos_network:

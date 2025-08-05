@@ -19,7 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built application from build stage
-COPY --from=build /app/dist/aos_frontend/browser /usr/share/nginx/html
+COPY --from=build /app/dist/demo /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -28,4 +28,4 @@ COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 
 # Start nginx
-CMD ["nginx", "-g", "daemon off;"] 
+CMD ["nginx", "-g", "daemon off;"]
