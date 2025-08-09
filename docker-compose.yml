@@ -13,17 +13,9 @@ services:
       - "5432:5432"
     networks:
       - aos_network
-    restart: unless-stopped
-
-  mail-dev:
-    container_name: maildev-aos
-    image: maildev/maildev
-    ports:
-      - "1080:1080"
-      - "1025:1025"
-    networks:
-      - aos_network
-    restart: unless-stopped
+    restart: always
+    
+    
 
   backend:
     container_name: aos-backend
@@ -31,33 +23,39 @@ services:
       context: ./aos_backend
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aos_db?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aos_db
       SPRING_DATASOURCE_USERNAME: aos_pg
       SPRING_DATASOURCE_PASSWORD: Maryame1234
-      SPRING_MAIL_HOST: mail-dev
-      SPRING_MAIL_PORT: 1025
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+      SPRING_MAIL_HOST: smtp.sendgrid.net
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_PROTOCOL: smtp
+      SPRING_MAIL_USERNAME: apikey
+      SPRING_MAIL_PASSWORD: ${SENDGRID_API_KEY}
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: true
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: true
       APPLICATION_MAILING_FRONTEND_ACTIVATION_URL: http://localhost:4200/activate-account
     ports:
       - "8089:8089"
     depends_on:
-      - postgres
-      - mail-dev
+      - postgres 
+    env_file:
+      - .env
     networks:
       - aos_network
- 
-   
 
   frontend:
     container_name: aos-frontend
     build:
       context: ./aos_frontend
     ports:
-      - "4200:4200"
+      - "4200:80"
     depends_on:
       - backend
+      
     networks:
       - aos_network
-
 
 networks:
   aos_network:

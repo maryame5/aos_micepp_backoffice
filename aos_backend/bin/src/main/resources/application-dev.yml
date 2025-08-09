@@ -1,0 +1,41 @@
+spring: 
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aos_db?useSSL=false&serverTimezone=UTC
+    username: aos_pg
+    password: Maryame1234
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: POSTGRESQL
+    open-in-view: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: ALWAYS
+  mail: 
+    host: mail-dev
+    port: 1025
+    properties: 
+      mail: 
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+application:
+  security:
+    jwt:
+      secret-key: 0Xft560/AaGtvlV7KqGlKPj8pBRubzWYxzGpvgg0LyRZdAi3WksRrhCq5myck+hJ
+      expiration: 8640000
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+server:
+  port: 8089
+  

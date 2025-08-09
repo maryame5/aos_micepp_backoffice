@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class TestController {
     
     private final UserManagementService userManagementService;
-    private final EmailService emailService;
+    private final EmailService emailService ;
 
     @PostMapping("/register-test-user")
     public ResponseEntity<String> registerTestUser(@RequestBody RegisterationRequest request) {

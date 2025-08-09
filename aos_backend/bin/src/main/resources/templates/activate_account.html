@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Activate Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Activate Your Account</h1>
+        <p th:text="'Hello, ' + ${username} + '!'"></p>
+        <p>Thank you for joining our team in Micepp . Your account has been created. To activate your account, please click the link below:</p>
+        <div class="activation-code"><span th:text="${activationCode}"></span></div>
+        <a th:href="${confirmationUrl}">Activate Account</a>
+        <p>If you did not register for this account, you can safely ignore this email.</p>
+    </div>
+</body>
+</html>

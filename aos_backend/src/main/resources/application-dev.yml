@@ -20,14 +20,17 @@ spring:
     init:
       mode: ALWAYS
   mail: 
-    host: mail-dev
-    port: 1025
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey
+    password: ${SENDGRID_API_KEY}
+    protocol: smtp
     properties: 
       mail: 
         smtp:
-          auth: false
+          auth: true
           starttls:
-            enable: false
+            enable: true
 application:
   security:
     jwt:

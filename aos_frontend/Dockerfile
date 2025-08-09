@@ -1,31 +1,24 @@
 # Build stage
-FROM node:20-alpine AS build
-
+FROM node:22-alpine AS build
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm ci
-
-# Copy source code
 COPY . .
-
-# Build the application
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built application from build stage
-COPY --from=build /app/dist/demo /usr/share/nginx/html
+# Remove default nginx html files
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copy nginx configuration
+# Copy built browser files
+# For Angular application builder, artifacts are in dist/<project>/browser
+COPY --from=build /app/dist/aos_frontend/browser /usr/share/nginx/html
+
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Expose port
 EXPOSE 80
-
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

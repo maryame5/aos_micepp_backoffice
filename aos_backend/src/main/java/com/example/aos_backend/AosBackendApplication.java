@@ -12,6 +12,7 @@ import com.example.aos_backend.user.Role;
 
 @SpringBootApplication
 @EnableAsync
+@EnableJpaAuditing
 public class AosBackendApplication {
 
 	public static void main(String[] args) {
@@ -22,10 +23,14 @@ public class AosBackendApplication {
 	public CommandLineRunner runner(RoleRepository roleRepository) {
 		return args -> {
 			if (roleRepository.findByName("USER").isEmpty()) {
-				roleRepository.save(Role.builder().name("USER").build());
+				roleRepository.save(Role.builder()
+						.name("USER")
+						.build());
 			}
 			if (roleRepository.findByName("ADMIN").isEmpty()) {
-				roleRepository.save(Role.builder().name("ADMIN").build());
+				roleRepository.save(Role.builder()
+						.name("ADMIN")
+						.build());
 			}
 			if (roleRepository.findByName("SUPPORT").isEmpty()) {
 				roleRepository.save(Role.builder().name("SUPPORT").build());

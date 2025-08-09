@@ -8,8 +8,8 @@ public enum EmailTemplateName {
     WELCOME_EMAIL("welcome_email");
 
     private final String name;
+
     EmailTemplateName(String name) {
         this.name = name;
     }
-
 }

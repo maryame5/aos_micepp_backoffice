@@ -1,44 +1,46 @@
 package com.example.aos_backend.Service;
 
+import java.util.Optional;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import com.example.aos_backend.Repository.AdminRepository;
-import com.example.aos_backend.Repository.SupportRepository;
-import com.example.aos_backend.Repository.UserRepository;
-
+import com.example.aos_backend.Repository.*;
+import com.example.aos_backend.user.Utilisateur;
 import lombok.RequiredArgsConstructor;
-
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UtilisateurRepository userRepository;
     private final AdminRepository adminRepository;
     private final SupportRepository supportRepository;
+    private final AgentRepository agentRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Try to find user in regular users table
-        var user = userRepository.findByEmail(email);
-        if (user.isPresent()) {
-            return user.get();
-        }
-
-        // Try to find user in admin table
-        var admin = adminRepository.findByEmail(email);
-        if (admin.isPresent()) {
-            return admin.get();
-        }
-
-        // Try to find user in support table
-        var support = supportRepository.findByEmail(email);
-        if (support.isPresent()) {
-            return support.get();
-        }
-
-        throw new UsernameNotFoundException("User not found with email: " + email);
+        Utilisateur utilisateur = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+        return org.springframework.security.core.userdetails.User
+            .withUsername(utilisateur.getEmail())
+            .password(utilisateur.getPassword())
+            .authorities(utilisateur.getRoles().stream()
+                .map(role -> "ROLE_" + role.getName())
+                .toArray(String[]::new))
+            .accountLocked(utilisateur.isAccountLocked())
+            .disabled(!utilisateur.isEnabled())
+            .build();
     }
+
+    public String getUserRoleType(String email) throws UsernameNotFoundException {
+        Optional<Utilisateur> user = userRepository.findByEmail(email);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("User not found with email: " + email);
+        }
+        if (adminRepository.existsByUtilisateur(user.get())) return "ADMIN";
+        if (supportRepository.existsByUtilisateur(user.get())) return "SUPPORT";
+        if (agentRepository.existsByUtilisateur(user.get())) return "AGENT";
+        return "UNKNOWN";
+}
 }
