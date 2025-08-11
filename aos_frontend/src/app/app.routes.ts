@@ -11,7 +11,8 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./pages/public/home/home.component').then(m => m.HomeComponent)
+        redirectTo: '/auth/login',
+        pathMatch: 'full'
       },
       {
         path: 'services',

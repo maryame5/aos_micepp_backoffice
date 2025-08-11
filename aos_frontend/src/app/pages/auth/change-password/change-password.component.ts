@@ -1,257 +1,205 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth.service';
+import { ChangePasswordRequest } from '../../../models/user.model';
 
 @Component({
   selector: 'app-change-password',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="change-password-container">
-      <mat-card class="change-password-card">
-        <mat-card-header class="card-header">
-          <div class="logo">
-            <mat-icon class="logo-icon">security</mat-icon>
-            <h1>Changer le mot de passe</h1>
+      <div class="change-password-background"></div>
+      
+      <div class="change-password-content">
+        <div class="change-password-card">
+          <div class="change-password-header">
+            <h1>Changez votre mot de passe</h1>
+            <p>Pour votre sécurité, veuillez définir un nouveau mot de passe.</p>
           </div>
-          <p class="subtitle">Veuillez définir un nouveau mot de passe sécurisé</p>
-        </mat-card-header>
 
-        <mat-card-content>
-          <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()" class="form">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Mot de passe actuel</mat-label>
-              <input matInput [type]="hideCurrentPassword ? 'password' : 'text'" formControlName="currentPassword">
-              <button mat-icon-button matSuffix (click)="hideCurrentPassword = !hideCurrentPassword" type="button">
-                <mat-icon>{{ hideCurrentPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              <mat-error *ngIf="changePasswordForm.get('currentPassword')?.hasError('required')">
-                Le mot de passe actuel est requis
-              </mat-error>
-            </mat-form-field>
+          <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()" class="change-password-form">
+            <div class="form-field">
+              <label>Mot de passe actuel</label>
+              <input type="password" formControlName="currentPassword" placeholder="Mot de passe actuel">
+              <div class="error" *ngIf="changePasswordForm.get('currentPassword')?.invalid && changePasswordForm.get('currentPassword')?.touched">
+                Mot de passe requis
+              </div>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nouveau mot de passe</mat-label>
-              <input matInput [type]="hideNewPassword ? 'password' : 'text'" formControlName="newPassword">
-              <button mat-icon-button matSuffix (click)="hideNewPassword = !hideNewPassword" type="button">
-                <mat-icon>{{ hideNewPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              <mat-error *ngIf="changePasswordForm.get('newPassword')?.hasError('required')">
-                Le nouveau mot de passe est requis
-              </mat-error>
-              <mat-error *ngIf="changePasswordForm.get('newPassword')?.hasError('minlength')">
-                Le mot de passe doit contenir au moins 8 caractères
-              </mat-error>
-            </mat-form-field>
+            <div class="form-field">
+              <label>Nouveau mot de passe</label>
+              <input type="password" formControlName="newPassword" placeholder="Nouveau mot de passe">
+              <div class="error" *ngIf="changePasswordForm.get('newPassword')?.invalid && changePasswordForm.get('newPassword')?.touched">
+                Mot de passe requis (minimum 8 caractères)
+              </div>
+            </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Confirmer le nouveau mot de passe</mat-label>
-              <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword">
-              <button mat-icon-button matSuffix (click)="hideConfirmPassword = !hideConfirmPassword" type="button">
-                <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
-              </button>
-              <mat-error *ngIf="changePasswordForm.get('confirmPassword')?.hasError('required')">
-                La confirmation est requise
-              </mat-error>
-              <mat-error *ngIf="changePasswordForm.hasError('passwordMismatch')">
+            <div class="form-field">
+              <label>Confirmer le nouveau mot de passe</label>
+              <input type="password" formControlName="confirmPassword" placeholder="Confirmer le mot de passe">
+              <div class="error" *ngIf="changePasswordForm.get('confirmPassword')?.invalid && changePasswordForm.get('confirmPassword')?.touched">
+                Confirmation requise
+              </div>
+              <div class="error" *ngIf="changePasswordForm.errors?.['mismatch'] && changePasswordForm.get('confirmPassword')?.touched">
                 Les mots de passe ne correspondent pas
-              </mat-error>
-            </mat-form-field>
-
-            <div class="password-requirements">
-              <p class="requirements-title">Exigences du mot de passe :</p>
-              <ul class="requirements-list">
-                <li [class.valid]="hasMinLength()">Au moins 8 caractères</li>
-                <li [class.valid]="hasUpperCase()">Une lettre majuscule</li>
-                <li [class.valid]="hasLowerCase()">Une lettre minuscule</li>
-                <li [class.valid]="hasNumber()">Un chiffre</li>
-              </ul>
+              </div>
             </div>
 
             <button 
-              mat-raised-button 
-              color="primary" 
               type="submit" 
-              class="submit-button full-width"
+              class="change-password-button"
               [disabled]="changePasswordForm.invalid || isLoading">
-              {{ isLoading ? 'Modification en cours...' : 'Changer le mot de passe' }}
+              <span *ngIf="isLoading">Changement en cours...</span>
+              <span *ngIf="!isLoading">Changer le mot de passe</span>
             </button>
           </form>
-
-          <div class="form-footer">
-            <a routerLink="/auth/login" class="back-link">
-              <mat-icon>arrow_back</mat-icon>
-              Retour à la connexion
-            </a>
-          </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .change-password-container {
       min-height: 100vh;
       display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .change-password-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 0;
+    }
+
+    .change-password-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 100%;
       padding: 2rem;
     }
 
     .change-password-card {
       width: 100%;
-      max-width: 450px;
+      max-width: 400px;
+      background: white;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
 
-    .card-header {
+    .change-password-header {
       text-align: center;
       margin-bottom: 2rem;
     }
 
-    .logo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .logo-icon {
-      font-size: 3rem;
-      width: 3rem;
-      height: 3rem;
-      color: #667eea;
-    }
-
-    .logo h1 {
+    .change-password-header h1 {
       font-size: 1.5rem;
       font-weight: 600;
       color: #1e293b;
       margin: 0;
     }
 
-    .subtitle {
+    .change-password-header p {
       color: #64748b;
-      margin: 0;
+      margin: 0.5rem 0 0;
       font-size: 0.875rem;
     }
 
-    .form {
+    .change-password-form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
 
-    .full-width {
-      width: 100%;
-    }
-
-    .password-requirements {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 1rem 0;
-    }
-
-    .requirements-title {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #374151;
-      margin: 0 0 0.5rem 0;
-    }
-
-    .requirements-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .requirements-list li {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin: 0.25rem 0;
+    .form-field {
       position: relative;
-      padding-left: 1.5rem;
     }
 
-    .requirements-list li::before {
-      content: '×';
-      position: absolute;
-      left: 0;
-      color: #dc2626;
-      font-weight: bold;
-    }
-
-    .requirements-list li.valid {
-      color: #059669;
-    }
-
-    .requirements-list li.valid::before {
-      content: '✓';
-      color: #059669;
-    }
-
-    .submit-button {
-      height: 48px;
+    .form-field label {
+      display: block;
+      margin-bottom: 0.5rem;
       font-weight: 500;
-      margin-top: 1rem;
+      color: #374151;
     }
 
-    .form-footer {
-      margin-top: 2rem;
-      text-align: center;
+    .form-field input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
     }
 
-    .back-link {
-      color: #3b82f6;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+    .form-field input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .error {
+      color: #dc2626;
       font-size: 0.875rem;
+      margin-top: 0.25rem;
     }
 
-    .back-link:hover {
-      text-decoration: underline;
+    .change-password-button {
+      width: 100%;
+      padding: 0.75rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .change-password-button:hover:not(:disabled) {
+      background: #2563eb;
+    }
+
+    .change-password-button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 768px) {
+      .change-password-content {
+        padding: 1rem;
+      }
+
+      .change-password-card {
+        padding: 1.5rem;
+      }
     }
   `]
 })
-export class ChangePasswordComponent {
-  changePasswordForm: FormGroup;
-  hideCurrentPassword = true;
-  hideNewPassword = true;
-  hideConfirmPassword = true;
+export class ChangePasswordComponent implements OnInit {
+  changePasswordForm!: FormGroup;
   isLoading = false;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
     this.changePasswordForm = this.fb.group({
+      email: [{ value: this.authService.getCurrentUser()?.email || '', disabled: true }, [Validators.required, Validators.email]],
       currentPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required]
@@ -259,59 +207,51 @@ export class ChangePasswordComponent {
   }
 
   passwordMatchValidator(form: FormGroup) {
-    const newPassword = form.get('newPassword');
-    const confirmPassword = form.get('confirmPassword');
-    
-    if (newPassword && confirmPassword && newPassword.value !== confirmPassword.value) {
-      return { passwordMismatch: true };
-    }
-    return null;
-  }
-
-  hasMinLength(): boolean {
-    const newPassword = this.changePasswordForm.get('newPassword')?.value || '';
-    return newPassword.length >= 8;
-  }
-
-  hasUpperCase(): boolean {
-    const newPassword = this.changePasswordForm.get('newPassword')?.value || '';
-    return /[A-Z]/.test(newPassword);
-  }
-
-  hasLowerCase(): boolean {
-    const newPassword = this.changePasswordForm.get('newPassword')?.value || '';
-    return /[a-z]/.test(newPassword);
-  }
-
-  hasNumber(): boolean {
-    const newPassword = this.changePasswordForm.get('newPassword')?.value || '';
-    return /\d/.test(newPassword);
+    return form.get('newPassword')?.value === form.get('confirmPassword')?.value
+      ? null
+      : { mismatch: true };
   }
 
   onSubmit(): void {
-    if (this.changePasswordForm.valid && !this.isLoading) {
+    if (this.changePasswordForm.valid && !this.isLoading && this.authService.getCurrentUser()) {
       this.isLoading = true;
-      const formValue = this.changePasswordForm.value;
+      const request: ChangePasswordRequest = {
+        currentPassword: this.changePasswordForm.get('currentPassword')?.value,
+        newPassword: this.changePasswordForm.get('newPassword')?.value,
+        confirmPassword: this.changePasswordForm.get('confirmPassword')?.value
+      };
 
-      this.authService.changePassword(formValue).subscribe({
-        next: () => {
+      this.authService.changePassword(request).subscribe({
+        next: (success) => {
           this.isLoading = false;
-          this.snackBar.open(
-            'Mot de passe modifié avec succès',
-            'Fermer',
-            { duration: 3000, panelClass: ['success-snackbar'] }
-          );
-          this.router.navigate(['/auth/login']);
+          if (success) {
+            alert('Mot de passe changé avec succès');
+            const role = this.authService.getCurrentUser()?.role;
+            this.redirectUser(role);
+          } else {
+            alert('Échec du changement de mot de passe');
+          }
         },
         error: (error) => {
           this.isLoading = false;
-          this.snackBar.open(
-            'Erreur lors de la modification du mot de passe',
-            'Fermer',
-            { duration: 5000, panelClass: ['error-snackbar'] }
-          );
+          alert(error.message || 'Erreur lors du changement de mot de passe');
         }
       });
     }
   }
-}
+
+  private redirectUser(role: string | undefined): void {
+    switch (role) {
+      case 'ADMIN':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'SUPPORT':
+        this.router.navigate(['/agent/dashboard']);
+        break;
+      case 'AGENT':
+        this.router.navigate(['/agent/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
+  }}

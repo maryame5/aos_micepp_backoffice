@@ -6,13 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.example.aos_backend.user.Support;
+import com.example.aos_backend.user.Utilisateur;
 
 @Repository
 public interface SupportRepository extends JpaRepository<Support, Integer> {
-    Optional<Support> findByEmail(String email);
-    Optional<Support> findByCIN(String cin);
-    Optional<Support> findByMatricule(String matricule);
-    boolean existsByEmail(String email);
-    boolean existsByCIN(String cin);
-    boolean existsByMatricule(String matricule);
+
+     boolean existsByUtilisateur(Utilisateur user);
+        Optional<Support> findByUtilisateur(Utilisateur user);
 } 

@@ -10,15 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.aos_backend.Service.AuthenticationService;
-import com.example.aos_backend.Service.ComprehensiveAuthService;
+import com.example.aos_backend.Service.AuthService;
 import com.example.aos_backend.Service.PasswordChangeService;
-import com.example.aos_backend.Controller.RegisterationRequest;
-import com.example.aos_backend.Controller.LoginRequest;
-import com.example.aos_backend.Controller.PasswordChangeRequest;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.MessagingException;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,24 +22,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(name = "Authentication")
 public class AuthenticationController {
-    private final AuthenticationService service;
-    private final ComprehensiveAuthService comprehensiveAuthService;
+   
+    private final AuthService authService;
     private final PasswordChangeService passwordChangeService;
 
-@PostMapping("/register")
-@ResponseStatus(HttpStatus.ACCEPTED)
-public ResponseEntity<?> register(
-    @RequestBody @Validated RegisterationRequest request) throws MessagingException {
-    
-        service.register(request);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-    
-    }
+
 
 @PostMapping("/login")
 public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     try {
-        var response = comprehensiveAuthService.authenticate(request.getEmail(), request.getPassword());
+        var response = authService.authenticate(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(response);
     } catch (Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");

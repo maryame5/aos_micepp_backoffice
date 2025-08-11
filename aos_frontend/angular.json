@@ -5,7 +5,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "demo": {
+    "aos_frontend": {
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -29,7 +29,7 @@
             "assets": [],
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "outputPath": "dist/demo",
+            "outputPath": "dist/aos_frontend",
             "polyfills": ["zone.js"],
             "scripts": [],
             "styles": [

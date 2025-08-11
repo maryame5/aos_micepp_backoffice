@@ -1,0 +1,14 @@
+spring :
+  profiles:
+    active: dev
+  servlet:
+    max-file-size : 50MB
+springdoc: 
+  default-produces-media-typa : application/json
+
+
+server:
+  port: 8089
+  servlet:
+    context-path: /AOS_MICEPP
+    

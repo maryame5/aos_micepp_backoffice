@@ -1,4 +1,5 @@
 package com.example.aos_backend.user;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "role")
@@ -21,25 +23,23 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-	@Column(unique = true)
-	
-	private String name; // e.g., "ROLE_USER", "ROLE_ADMIN"
-    
+
+    @Column(unique = true)
+    private String name; // e.g., "ROLE_ADMIN", "ROLE_SUPPORT", "ROLE_AGENT"
+
     @ManyToMany(mappedBy = "roles")
-    private List<User> users;
+    private List<Utilisateur> utilisateurs;
+
     @CreatedDate
-	@Column(name = "created_date", updatable = false)
+    @Column(name = "created_date", updatable = false)
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    @Column(name = "updated_date", insertable = false)
+    private LocalDateTime lastModifiedDate;
 
 
-	private LocalDateTime createdDate;
-	@LastModifiedDate
-	@Column(name = "updated_date",insertable = false)
-
-	private LocalDateTime lastModifiedDate;
-
-  
-	public String getName() {
-			return name;
-	}
-
+    public String getName() {
+        return name;
+    }
 }

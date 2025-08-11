@@ -8,7 +8,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:
@@ -19,15 +19,20 @@ spring:
   sql:
     init:
       mode: ALWAYS
+      data.sql: classpath:data.sql
+      platform: POSTGRESQL
   mail: 
-    host: mail-dev
-    port: 1025
+    host: smtp.sendgrid.net
+    port: 587
+    username: apikey
+    password: ${SENDGRID_API_KEY}
+    protocol: smtp
     properties: 
       mail: 
         smtp:
-          auth: false
+          auth: true
           starttls:
-            enable: false
+            enable: true
 application:
   security:
     jwt:
@@ -38,4 +43,11 @@ application:
       activation-url: http://localhost:4200/activate-account
 server:
   port: 8089
-  
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tryItOutEnabled: true
