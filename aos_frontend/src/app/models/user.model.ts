@@ -17,8 +17,7 @@ export interface User {
 export enum UserRole {
   ADMIN = 'ADMIN',
   SUPPORT = 'SUPPORT',
-  AGENT = 'AGENT',
-  VISITOR = 'VISITOR'
+  AGENT = 'AGENT'
 }
 
 export interface LoginRequest {
@@ -28,11 +27,19 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  user: User;
-  expiresAt: number;
+    userType: UserRole;
+  email: string;
+  mustChangePassword: boolean;
+
+  
+}
+export interface Userr {
+  email: string;
+  role: UserRole;
 }
 
 export interface ChangePasswordRequest {
+
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;

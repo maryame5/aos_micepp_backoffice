@@ -63,7 +63,8 @@ public class Utilisateur implements UserDetails, Principal {
     @JoinTable(
         name = "utilisateur_roles",
         joinColumns = @JoinColumn(name = "utilisateur_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+        inverseJoinColumns = @JoinColumn(name = "role_id"),
+        uniqueConstraints = @UniqueConstraint(name = "uk_utilisateur_roles", columnNames = {"utilisateur_id", "role_id"})
     )
     @JsonIgnore
     private List<Role> roles;
