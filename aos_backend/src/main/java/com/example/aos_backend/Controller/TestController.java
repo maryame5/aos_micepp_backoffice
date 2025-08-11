@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/test")
 @RequiredArgsConstructor
-public class TestController {
+public class TestController{
     
     private final UserManagementService userManagementService;
     private final EmailService emailService ;

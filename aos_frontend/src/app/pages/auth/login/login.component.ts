@@ -8,11 +8,7 @@ import { LanguageService } from '../../../services/language.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="login-container">
       <div class="login-background"></div>
@@ -52,7 +48,7 @@ import { LanguageService } from '../../../services/language.service';
                 <input type="checkbox" formControlName="rememberMe">
                 <span>Se souvenir de moi</span>
               </label>
-              <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+              <button type="button" (click)="onResetPassword()" class="forgot-link">Mot de passe oublié ?</button>
             </div>
 
             <button 
@@ -64,16 +60,15 @@ import { LanguageService } from '../../../services/language.service';
             </button>
           </form>
 
-         
-
-        <div class="language-selector">
-          <button 
-            *ngFor="let lang of availableLanguages" 
-            (click)="changeLanguage(lang.code)"
-            class="lang-btn"
-            [class.active]="currentLanguage === lang.code">
-            {{ lang.flag }} {{ lang.name }}
-          </button>
+          <div class="language-selector">
+            <button 
+              *ngFor="let lang of availableLanguages" 
+              (click)="changeLanguage(lang.code)"
+              class="lang-btn"
+              [class.active]="currentLanguage === lang.code">
+              {{ lang.flag }} {{ lang.name }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -359,22 +354,34 @@ export class LoginComponent implements OnInit {
         next: (response) => {
           this.isLoading = false;
           alert('Connexion réussie');
-          this.redirectUser(response.user.role);
+          if (response.mustChangePassword) {
+            this.router.navigate(['/auth/change-password']);
+          } else {
+            this.redirectUser(response.userType);
+          }
         },
         error: (error) => {
           this.isLoading = false;
-          alert('Email ou mot de passe incorrect');
+          alert(error.message || 'Erreur lors de la connexion');
         }
       });
     }
   }
 
-  loginAsDemo(email: string): void {
-    this.loginForm.patchValue({
-      email: email,
-      password: 'password123'
+  onResetPassword(): void {
+    const email = this.loginForm.get('email')?.value;
+    if (!email) {
+      alert('Veuillez entrer votre email.');
+      return;
+    }
+    this.authService.resetPassword(email).subscribe({
+      next: (message) => {
+        alert(message); // Shows "Please contact the administration to reset your password."
+      },
+      error: (error) => {
+        alert(error.message || 'Erreur lors de la réinitialisation du mot de passe');
+      }
     });
-    this.onSubmit();
   }
 
   changeLanguage(langCode: string): void {
@@ -385,8 +392,10 @@ export class LoginComponent implements OnInit {
   private redirectUser(role: string): void {
     switch (role) {
       case 'ADMIN':
-      case 'SUPPORT':
         this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'SUPPORT':
+        this.router.navigate(['/agent/dashboard']);
         break;
       case 'AGENT':
         this.router.navigate(['/agent/dashboard']);
