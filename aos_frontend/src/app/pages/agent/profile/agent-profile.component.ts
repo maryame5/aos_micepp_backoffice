@@ -44,7 +44,7 @@ import { User } from '../../../models/user.model';
                     <mat-icon class="avatar-icon">account_circle</mat-icon>
                   </div>
                   <div class="profile-header-info">
-                    <mat-card-title>{{ currentUser.email }} </mat-card-title>
+                    <mat-card-title>{{ currentUser.firstName }} {{ currentUser.lastName }}</mat-card-title>
                     <mat-card-subtitle>{{ currentUser.email }}</mat-card-subtitle>
                   </div>
                 </mat-card-header>
@@ -196,7 +196,14 @@ import { User } from '../../../models/user.model';
                       <label>Rôle</label>
                       <span>{{ getRoleLabel(currentUser.role) }}</span>
                     </div>
-                    
+                    <div class="info-item">
+                      <label>Membre depuis</label>
+                      <span>{{ currentUser.createdAt | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="info-item" *ngIf="currentUser.lastLogin">
+                      <label>Dernière connexion</label>
+                      <span>{{ currentUser.lastLogin | date:'dd/MM/yyyy à HH:mm' }}</span>
+                    </div>
                   </div>
                 </mat-card-content>
               </mat-card>
@@ -360,7 +367,12 @@ export class AgentProfileComponent implements OnInit {
     this.currentUser = this.authService.getCurrentUser();
     if (this.currentUser) {
       this.profileForm.patchValue({
-        email: this.currentUser.email
+        firstName: this.currentUser.firstName,
+        lastName: this.currentUser.lastName,
+        email: this.currentUser.email,
+        phoneNumber: this.currentUser.phoneNumber || '',
+        address: this.currentUser.address || '',
+        department: this.currentUser.department || ''
       });
     }
   }
@@ -418,7 +430,12 @@ export class AgentProfileComponent implements OnInit {
   resetForm(): void {
     if (this.currentUser) {
       this.profileForm.patchValue({
-        email: this.currentUser.email
+        firstName: this.currentUser.firstName,
+        lastName: this.currentUser.lastName,
+        email: this.currentUser.email,
+        phoneNumber: this.currentUser.phoneNumber || '',
+        address: this.currentUser.address || '',
+        department: this.currentUser.department || ''
       });
     }
   }

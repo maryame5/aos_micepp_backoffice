@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map, tap, delay } from 'rxjs/operators';
 import { User, LoginRequest, LoginResponse, UserRole, ChangePasswordRequest } from '../models/user.model';
 
 @Injectable({
@@ -13,74 +13,92 @@ export class AuthService {
 
   private readonly TOKEN_KEY = 'aos_token';
   private readonly USER_KEY = 'aos_user';
-  private readonly MUST_CHANGE_PASSWORD_KEY = 'mustChangePassword';
-  private readonly API_URL =  'http://localhost:8089/AOS_MICEPP/auth';
+
+  // Mock users for development
+  private mockUsers: User[] = [
+    {
+      id: '1',
+      email: 'admin@aos.com',
+      firstName: 'Ahmed',
+      lastName: 'Ben Ali',
+      role: UserRole.ADMIN,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      department: 'Administration'
+    },
+    {
+      id: '2',
+      email: 'support@aos.com',
+      firstName: 'Fatima',
+      lastName: 'Zahra',
+      role: UserRole.SUPPORT,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      department: 'Support'
+    },
+    {
+      id: '3',
+      email: 'agent@aos.com',
+      firstName: 'Mohamed',
+      lastName: 'Kassimi',
+      role: UserRole.AGENT,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      department: 'Ressources Humaines'
+    }
+  ];
 
   constructor(private http: HttpClient) {
     this.loadUserFromStorage();
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<any>(`${this.API_URL}/login`, credentials).pipe(
-      map(response => ({
-        token: response.token,
-        userType: response.userType as UserRole,
-        email: response.email,
-        mustChangePassword: response.mustChangePassword
-      }) as LoginResponse),
-      tap((response: LoginResponse) => {
-        const user: User = {
-          id: 'unknown', // Placeholder; replace with actual ID if available later
-          email: response.email,
-          firstName: 'N/A', // Default value
-          lastName: 'N/A', // Default value
-          role: response.userType,
-          isActive: true, // Assume active unless backend provides this
-          createdAt: new Date(), // Current timestamp
-          updatedAt: new Date(), // Current timestamp
-          department: 'N/A' // Default value
-        };
-        localStorage.setItem(this.TOKEN_KEY, response.token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-        localStorage.setItem(this.MUST_CHANGE_PASSWORD_KEY, JSON.stringify(response.mustChangePassword));
-        this.currentUserSubject.next(user);
-      }),
-      catchError(this.handleError)
-    );
+    // Mock authentication - replace with real API call
+    const user = this.mockUsers.find(u => u.email === credentials.email);
+    
+    if (user && credentials.password === 'password123') {
+      const token = this.generateMockToken();
+      const response: LoginResponse = {
+        token,
+        user,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+      };
+
+      return of(response).pipe(
+        delay(1000), // Simulate API delay
+        tap(res => {
+          localStorage.setItem(this.TOKEN_KEY, res.token);
+          localStorage.setItem(this.USER_KEY, JSON.stringify(res.user));
+          this.currentUserSubject.next(res.user);
+        })
+      );
+    }
+
+    throw new Error('Invalid credentials');
   }
 
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem(this.MUST_CHANGE_PASSWORD_KEY);
     this.currentUserSubject.next(null);
   }
 
   changePassword(request: ChangePasswordRequest): Observable<boolean> {
-    return this.http.post<boolean>(`${this.API_URL}/change-password`, request).pipe(
-      tap(success => {
-        if (success) {
-          localStorage.setItem(this.MUST_CHANGE_PASSWORD_KEY, JSON.stringify(false));
-        }
-      }),
-      catchError(this.handleError)
-    );
+    // Mock password change - replace with real API call
+    return of(true).pipe(delay(1000));
   }
 
-  resetPassword(email: string): Observable<string> {
-    return new Observable(observer => {
-      observer.next('Please contact the administration to reset your password.');
-      observer.complete();
-    });
+  resetPassword(email: string): Observable<boolean> {
+    // Mock password reset - replace with real API call
+    return of(true).pipe(delay(1000));
   }
 
   isAuthenticated(): boolean {
     const token = localStorage.getItem(this.TOKEN_KEY);
     return !!token && !this.isTokenExpired(token);
-  }
-
-  mustChangePassword(): boolean {
-    return JSON.parse(localStorage.getItem(this.MUST_CHANGE_PASSWORD_KEY) || 'false');
   }
 
   getCurrentUser(): User | null {
@@ -107,7 +125,7 @@ export class AuthService {
 
     if (token && userStr && !this.isTokenExpired(token)) {
       try {
-        const user: User = JSON.parse(userStr);
+        const user = JSON.parse(userStr);
         this.currentUserSubject.next(user);
       } catch (error) {
         console.error('Error parsing user from storage:', error);
@@ -125,13 +143,12 @@ export class AuthService {
     }
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'An error occurred';
-    if (error.status === 401) {
-      errorMessage = 'Invalid credentials';
-    } else if (error.status === 400) {
-      errorMessage = typeof error.error === 'string' ? error.error : 'Bad request';
-    }
-    return throwError(() => new Error(errorMessage));
+  private generateMockToken(): string {
+    const header = btoa(JSON.stringify({ typ: 'JWT', alg: 'HS256' }));
+    const payload = btoa(JSON.stringify({ 
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60),
+      iat: Math.floor(Date.now() / 1000)
+    }));
+    return `${header}.${payload}.mock-signature`;
   }
 }

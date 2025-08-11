@@ -19,6 +19,23 @@ public class AosBackendApplication {
 		SpringApplication.run(AosBackendApplication.class, args);
 	}
 
-
+	@Bean
+	public CommandLineRunner runner(RoleRepository roleRepository) {
+		return args -> {
+			if (roleRepository.findByName("USER").isEmpty()) {
+				roleRepository.save(Role.builder()
+						.name("USER")
+						.build());
+			}
+			if (roleRepository.findByName("ADMIN").isEmpty()) {
+				roleRepository.save(Role.builder()
+						.name("ADMIN")
+						.build());
+			}
+			if (roleRepository.findByName("SUPPORT").isEmpty()) {
+				roleRepository.save(Role.builder().name("SUPPORT").build());
+			}
+		};
+	}
 
 }
