@@ -2,6 +2,9 @@ package com.example.aos_backend.Controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,18 +49,28 @@ public ResponseEntity<?> changePassword(@RequestBody PasswordChangeRequest reque
             return ResponseEntity.badRequest().body("New password and confirm password do not match");
         }
         
-        // Get email from the current authenticated user
-        // For now, we'll need to get it from the request or token
-        // This is a simplified version - in a real app, you'd get the email from the JWT token
+        // Get email from the authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Check if the user is authenticated
+        if (authentication == null || !authentication.isAuthenticated() || 
+            "anonymousUser".equals(authentication.getName())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        String email;
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else {
+            email = authentication.getName();
+        }
         
-        // For demonstration, we'll assume the email is passed in the request
-        // In a real implementation, you'd extract it from the JWT token
-        String email = request.getEmail(); // You'll need to add email field to PasswordChangeRequest
+        if (email == null || "anonymousUser".equals(email)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
         
         boolean success = passwordChangeService.changePassword(email, request.getCurrentPassword(), request.getNewPassword());
         
         if (success) {
-            return ResponseEntity.ok("Password changed successfully");
+            return ResponseEntity.ok(true);
         } else {
             return ResponseEntity.badRequest().body("Current password is incorrect");
         }

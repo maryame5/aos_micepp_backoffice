@@ -7,6 +7,8 @@ import java.util.Map;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,7 @@ public class AuthService {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(email, password)
         );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Generate JWT token
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -53,9 +56,16 @@ public class AuthService {
         // Build response
         Map<String, Object> response = new HashMap<>();
         response.put("token", jwtToken);
-        response.put("userType", getUserType(email));
+        response.put("userT", getUserType(email));
+        response.put("userType", user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .findFirst()
+            .orElse("UNKNOWN"));
         response.put("email", email);
         response.put("mustChangePassword", isUsingTemporaryPassword(email));
+        response.put("userId", user.getId());
+        response.put("FirstName", user.getLastname());
+        response.put("LastName", user.getFirstname());
 
         return response;
     }

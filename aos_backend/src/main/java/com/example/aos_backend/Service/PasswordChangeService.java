@@ -34,6 +34,7 @@ public class PasswordChangeService {
             user.setUsingTemporaryPassword(false);
             user.setLastModifiedDate(LocalDateTime.now());
            userRepository.save(user);
+           return true;
         }
         return false;
     }

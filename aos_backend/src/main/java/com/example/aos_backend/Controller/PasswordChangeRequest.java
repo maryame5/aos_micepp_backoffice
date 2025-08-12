@@ -17,9 +17,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PasswordChangeRequest {
 
-    @NotEmpty(message = "Email is required")
-    @NotBlank(message = "Email cannot be blank")
-    private String email;
     @NotEmpty(message = "Current password is required")
     @NotBlank(message = "Current password cannot be blank")
     private String currentPassword;

@@ -30,15 +30,17 @@ export class AuthService {
       }) as LoginResponse),
       tap((response: LoginResponse) => {
         const user: User = {
-          id: 'unknown', // Placeholder; replace with actual ID if available later
+          id: response.id,
           email: response.email,
-          firstName: 'N/A', // Default value
-          lastName: 'N/A', // Default value
+          firstName: response.firstName,
+          lastName: response.lastName,
           role: response.userType,
-          isActive: true, // Assume active unless backend provides this
+
           createdAt: new Date(), // Current timestamp
           updatedAt: new Date(), // Current timestamp
           department: 'N/A' // Default value
+          ,
+          isActive: false
         };
         localStorage.setItem(this.TOKEN_KEY, response.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -57,10 +59,20 @@ export class AuthService {
   }
 
   changePassword(request: ChangePasswordRequest): Observable<boolean> {
-    return this.http.post<boolean>(`${this.API_URL}/change-password`, request).pipe(
+    const token = this.getToken();
+    console.log("Token:", token);
+    if (!token) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+    return this.http.post<boolean>(`${this.API_URL}/change-password`, request, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).pipe(
       tap(success => {
         if (success) {
           localStorage.setItem(this.MUST_CHANGE_PASSWORD_KEY, JSON.stringify(false));
+          
         }
       }),
       catchError(this.handleError)

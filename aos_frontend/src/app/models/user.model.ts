@@ -26,8 +26,11 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
   token: string;
-    userType: UserRole;
+  userType: UserRole;
   email: string;
   mustChangePassword: boolean;
 

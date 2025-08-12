@@ -38,10 +38,7 @@ export const routes: Routes = [
         path: 'login',
         loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent)
       },
-      {
-        path: 'forgot-password',
-        loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
-      },
+      
       {
         path: 'change-password',
         loadComponent: () => import('./pages/auth/change-password/change-password.component').then(m => m.ChangePasswordComponent)

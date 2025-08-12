@@ -248,10 +248,7 @@ export class ChangePasswordComponent implements OnInit {
       case 'SUPPORT':
         this.router.navigate(['/agent/dashboard']);
         break;
-      case 'AGENT':
-        this.router.navigate(['/agent/dashboard']);
-        break;
       default:
-        this.router.navigate(['/']);
+        this.router.navigate(['/404']);
     }
   }}
