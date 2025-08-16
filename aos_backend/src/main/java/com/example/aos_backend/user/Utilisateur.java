@@ -25,7 +25,7 @@ import lombok.*;
 @SuperBuilder
 @Getter
 @Setter
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -99,7 +99,7 @@ public class Utilisateur implements UserDetails, Principal {
             return List.of();
         }
         return this.roles.stream()
-                .map(r -> new SimpleGrantedAuthority(r.getName()))
+                .map(r -> new SimpleGrantedAuthority("ROLE_"+r.getName()))
                 .collect(Collectors.toList());
     }
 

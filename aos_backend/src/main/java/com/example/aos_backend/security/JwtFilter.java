@@ -49,10 +49,13 @@ protected void doFilterInternal(HttpServletRequest request,
         UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
         
         if (jwtService.isTokenValid(jwt, userDetails)) {
+            // Extract authorities from JWT token instead of database
+            var authorities = jwtService.extractAuthorities(jwt);
+            
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,
                     null,
-                    userDetails.getAuthorities()
+                    authorities
             );
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);

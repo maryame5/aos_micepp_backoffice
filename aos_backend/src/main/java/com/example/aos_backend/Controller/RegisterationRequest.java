@@ -44,4 +44,7 @@ public class RegisterationRequest {
     @NotEmpty(message = "Role is required")
     @NotBlank(message = "Role cannot be blank")
     private String role; // e.g., "AGENT", "ADMIN", "SUPPORT"
+
+    
+
 }

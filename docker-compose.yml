@@ -22,6 +22,7 @@ services:
     build:
       context: ./aos_backend
     environment:
+      SENDGRID_API_KEY: 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
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/aos_db
       SPRING_DATASOURCE_USERNAME: aos_pg
@@ -53,7 +54,6 @@ services:
       - "4200:80"
     depends_on:
       - backend
-      
     networks:
       - aos_network
 

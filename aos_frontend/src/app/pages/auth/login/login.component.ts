@@ -20,43 +20,43 @@ import { LanguageService } from '../../../services/language.service';
               <div class="logo-icon">🏢</div>
               <h1>AOS MICEPP</h1>
             </div>
-            <p class="login-subtitle">Connectez-vous à votre espace</p>
+            <p class="login-subtitle">{{ getText('auth.loginSubtitle') || 'Connectez-vous à votre espace' }}</p>
           </div>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
             <div class="form-field">
-              <label>Adresse email</label>
-              <input type="email" formControlName="email" autocomplete="email" placeholder="votre@email.com">
+              <label>{{ getText('auth.email') }}</label>
+              <input type="email" formControlName="email" autocomplete="email" [placeholder]="getText('auth.emailPlaceholder') || 'votre@email.com'">
               <div class="error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-                Email invalide
+                {{ getText('auth.emailError') || 'Email invalide' }}
               </div>
             </div>
 
             <div class="form-field">
-              <label>Mot de passe</label>
-              <input [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password" placeholder="Mot de passe">
+              <label>{{ getText('auth.password') }}</label>
+              <input [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password" [placeholder]="getText('auth.passwordPlaceholder') || 'Mot de passe'">
               <button type="button" class="toggle-password" (click)="hidePassword = !hidePassword">
                 {{ hidePassword ? '👁️' : '🙈' }}
               </button>
               <div class="error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-                Mot de passe requis
+                {{ getText('auth.passwordError') || 'Mot de passe requis' }}
               </div>
             </div>
 
             <div class="form-options">
               <label class="checkbox">
                 <input type="checkbox" formControlName="rememberMe">
-                <span>Se souvenir de moi</span>
+                <span>{{ getText('auth.rememberMe') }}</span>
               </label>
-              <button type="button" (click)="onResetPassword()" class="forgot-link">Mot de passe oublié ?</button>
+              <button type="button" (click)="onResetPassword()" class="forgot-link">{{ getText('auth.forgotPassword') }}</button>
             </div>
 
             <button 
               type="submit" 
               class="login-button"
               [disabled]="loginForm.invalid || isLoading">
-              <span *ngIf="isLoading">Connexion...</span>
-              <span *ngIf="!isLoading">Se connecter</span>
+              <span *ngIf="isLoading">{{ getText('auth.loggingIn') || 'Connexion...' }}</span>
+              <span *ngIf="!isLoading">{{ getText('auth.login') }}</span>
             </button>
           </form>
 
@@ -239,47 +239,6 @@ import { LanguageService } from '../../../services/language.service';
       cursor: not-allowed;
     }
 
-    .demo-accounts {
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid #e2e8f0;
-      text-align: center;
-    }
-
-    .demo-title {
-      font-size: 0.875rem;
-      color: #64748b;
-      margin-bottom: 1rem;
-    }
-
-    .demo-buttons {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .demo-btn {
-      background: #f3f4f6;
-      border: 1px solid #d1d5db;
-      color: #374151;
-      padding: 0.25rem 0.75rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.75rem;
-      transition: all 0.3s ease;
-    }
-
-    .demo-btn:hover {
-      background: #e5e7eb;
-    }
-
-    .demo-password {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      margin-top: 0.5rem;
-    }
-
     .language-selector {
       margin-top: 2rem;
       display: flex;
@@ -323,10 +282,10 @@ import { LanguageService } from '../../../services/language.service';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-  hidePassword = true;
   isLoading = false;
-  currentLanguage: string;
+  hidePassword = true;
   availableLanguages = this.languageService.getAvailableLanguages();
+  currentLanguage = this.languageService.getCurrentLanguage();
 
   constructor(
     private fb: FormBuilder,
@@ -334,73 +293,81 @@ export class LoginComponent implements OnInit {
     private languageService: LanguageService,
     private router: Router
   ) {
-    this.currentLanguage = this.languageService.getCurrentLanguage();
-  }
-
-  ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      password: ['', [Validators.required]],
       rememberMe: [false]
     });
   }
 
+  ngOnInit(): void {
+    // Subscribe to language changes
+    this.languageService.currentLanguage$.subscribe(language => {
+      this.currentLanguage = language;
+    });
+  }
+
   onSubmit(): void {
-    if (this.loginForm.valid && !this.isLoading) {
+    if (this.loginForm.valid) {
       this.isLoading = true;
       const credentials = this.loginForm.value;
+      console.log('Attempting login with credentials:', credentials);
 
       this.authService.login(credentials).subscribe({
         next: (response) => {
+          console.log('Login successful:', response);
           this.isLoading = false;
-          alert('Connexion réussie');
+          
+          // Vérifier si l'utilisateur doit changer son mot de passe
           if (response.mustChangePassword) {
+            console.log('User must change password, redirecting to change password page');
             this.router.navigate(['/auth/change-password']);
           } else {
             this.redirectUser(response.userType);
           }
         },
         error: (error) => {
+          console.error('Login error:', error);
           this.isLoading = false;
-          alert(error.message || 'Erreur lors de la connexion');
         }
       });
     }
   }
 
   onResetPassword(): void {
-    const email = this.loginForm.get('email')?.value;
-    if (!email) {
-      alert('Veuillez entrer votre email.');
-      return;
-    }
-    this.authService.resetPassword(email).subscribe({
-      next: (message) => {
-        alert(message); // Shows "Please contact the administration to reset your password."
-      },
-      error: (error) => {
-        alert(error.message || 'Erreur lors de la réinitialisation du mot de passe');
-      }
-    });
+    // Implement password reset functionality
+    console.log('Password reset requested');
   }
 
   changeLanguage(langCode: string): void {
+    console.log('Changing language to:', langCode);
     this.languageService.setLanguage(langCode);
     this.currentLanguage = langCode;
   }
 
+  getText(key: string): string {
+    return this.languageService.getText(key);
+  }
+
   private redirectUser(role: string): void {
-    switch (role) {
+    console.log('Redirecting user with role:', role);
+    
+    // Remove ROLE_ prefix if present
+    const cleanRole = role.replace('ROLE_', '');
+    console.log('Clean role:', cleanRole);
+    
+    switch (cleanRole) {
       case 'ADMIN':
+        console.log('Redirecting to admin dashboard');
         this.router.navigate(['/admin/dashboard']);
         break;
       case 'SUPPORT':
-        this.router.navigate(['/agent/dashboard']);
-        break;
-      case 'AGENT':
-        this.router.navigate(['/agent/dashboard']);
+        console.log('Redirecting to support dashboard');
+        this.router.navigate(['/support/dashboard']);
         break;
       default:
+        alert('Accès non autorisé');
+        console.log('Redirecting to default route');
         this.router.navigate(['/']);
     }
   }

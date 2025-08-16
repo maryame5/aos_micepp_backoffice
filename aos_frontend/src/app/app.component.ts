@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { LanguageService } from './services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -30,12 +32,17 @@ export class AppComponent implements OnInit {
     
     // Set available languages
     this.translate.addLangs(['fr', 'ar']);
+    
+    console.log('Translation service configured');
   }
 
   ngOnInit(): void {
+    console.log('AppComponent ngOnInit called');
     // Initialize language from service
     const currentLang = this.languageService.getCurrentLanguage();
+    console.log('Current language:', currentLang);
     this.translate.use(currentLang);
+    console.log('Language set in translation service');
   }
 
   getCurrentLanguage(): string {

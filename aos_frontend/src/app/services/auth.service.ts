@@ -25,8 +25,10 @@ export class AuthService {
       map(response => ({
         token: response.token,
         userType: response.userType as UserRole,
-        email: response.email,
-        mustChangePassword: response.mustChangePassword
+        email: response.email ,
+        mustChangePassword: response.mustChangePassword,
+        firstName: response.firstName,
+        lastName: response.lastName,
       }) as LoginResponse),
       tap((response: LoginResponse) => {
         const user: User = {
@@ -38,8 +40,7 @@ export class AuthService {
 
           createdAt: new Date(), // Current timestamp
           updatedAt: new Date(), // Current timestamp
-          department: 'N/A' // Default value
-          ,
+         
           isActive: false
         };
         localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -72,7 +73,7 @@ export class AuthService {
       tap(success => {
         if (success) {
           localStorage.setItem(this.MUST_CHANGE_PASSWORD_KEY, JSON.stringify(false));
-          
+          console.log('Password changed successfully, mustChangePassword set to false');
         }
       }),
       catchError(this.handleError)
@@ -92,7 +93,12 @@ export class AuthService {
   }
 
   mustChangePassword(): boolean {
-    return JSON.parse(localStorage.getItem(this.MUST_CHANGE_PASSWORD_KEY) || 'false');
+    try {
+      return JSON.parse(localStorage.getItem(this.MUST_CHANGE_PASSWORD_KEY) || 'false');
+    } catch (error) {
+      console.error('Error parsing mustChangePassword from localStorage:', error);
+      return false;
+    }
   }
 
   getCurrentUser(): User | null {
@@ -101,12 +107,29 @@ export class AuthService {
 
   hasRole(role: UserRole): boolean {
     const user = this.getCurrentUser();
-    return user?.role === role;
+    if (!user) return false;
+    
+    // Remove ROLE_ prefix from user role for comparison
+    const userRole = user.role.replace('ROLE_', '');
+    const cleanRole = role.replace('ROLE_', '');
+    return userRole === cleanRole;
   }
 
   hasAnyRole(roles: UserRole[]): boolean {
     const user = this.getCurrentUser();
-    return user ? roles.includes(user.role) : false;
+    if (!user) return false;
+    
+    // If no roles are required, allow access
+    if (!roles || roles.length === 0) return true;
+    
+    // Remove ROLE_ prefix from user role for comparison
+    const userRole = user.role.replace('ROLE_', '');
+    
+    // Check if any of the required roles match (with or without ROLE_ prefix)
+    return roles.some(role => {
+      const cleanRole = role.replace('ROLE_', '');
+      return userRole === cleanRole;
+    });
   }
 
   getToken(): string | null {

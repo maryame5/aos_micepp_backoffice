@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { ChangePasswordRequest } from '../../../models/user.model';
+import { ChangePasswordRequest, UserRole } from '../../../models/user.model';
 
 @Component({
   selector: 'app-change-password',
@@ -199,7 +199,6 @@ export class ChangePasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.changePasswordForm = this.fb.group({
-      email: [{ value: this.authService.getCurrentUser()?.email || '', disabled: true }, [Validators.required, Validators.email]],
       currentPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required]
@@ -241,14 +240,30 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   private redirectUser(role: string | undefined): void {
-    switch (role) {
+    if (!role) {
+      console.log('No role found, redirecting to login');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+    
+    console.log('Redirecting user with role:', role);
+    
+    // Remove ROLE_ prefix if present
+    const cleanRole = role.replace('ROLE_', '');
+    console.log('Clean role:', cleanRole);
+    
+    switch (cleanRole) {
       case 'ADMIN':
+        console.log('Redirecting to admin dashboard');
         this.router.navigate(['/admin/dashboard']);
         break;
       case 'SUPPORT':
+        console.log('Redirecting to support dashboard');
         this.router.navigate(['/agent/dashboard']);
         break;
       default:
-        this.router.navigate(['/404']);
+        console.log('Redirecting to default route');
+        this.router.navigate(['/']);
     }
-  }}
+  }
+}

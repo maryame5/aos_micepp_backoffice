@@ -1,25 +1,29 @@
 package com.example.aos_backend.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
-    private final JavaMailSender mailSender;
+    private final SendGrid sendGrid;
     private final SpringTemplateEngine templateEngine;
+
+    @Value("${spring.mail.sender:melkhalfi@insea.ac.ma}") // Fallback to your email; configure in application.yml
+    private String fromEmail;
 
     @Async
     public void sendEmail(
@@ -28,27 +32,49 @@ public class EmailService {
         EmailTemplateName emailTemplate,
         String confirmationUrl,
         String activationCode,
-        String subject
-    ) throws MessagingException {
+        String subject,
+        String role
+    ) throws IOException {
         String templateName = emailTemplate == null ? "welcome_email" : emailTemplate.getName().toLowerCase();
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
-
+        // Prepare Thymeleaf context for templating
         Map<String, Object> properties = new HashMap<>();
         properties.put("username", username);
         properties.put("confirmationUrl", confirmationUrl);
         properties.put("activationCode", activationCode);
+        
+        // Add specific variables for welcome email template
+        if (emailTemplate == EmailTemplateName.WELCOME_EMAIL) {
+            properties.put("fullName", username);
+            properties.put("email", to);
+            properties.put("role", role != null ? role : "USER");
+            properties.put("temporaryPassword", activationCode);
+        }
+        // Add specific variables for password reset template
 
         Context context = new Context();
         context.setVariables(properties);
 
-        helper.setFrom("no-reply@aos-micepp.com"); // Replace with your verified SendGrid sender email
-        helper.setTo(to);
-        helper.setSubject(subject);
+        // Render HTML template
+        String htmlContent = templateEngine.process(templateName, context);
 
-        String template = templateEngine.process(templateName, context);
-        helper.setText(template, true);
-        mailSender.send(message);
+        // Configure SendGrid email
+        Email from = new Email(fromEmail); // Must be verified in SendGrid
+        Email toEmail = new Email(to);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, toEmail, content);
+
+        // Send email via SendGrid API
+        Request request = new Request();
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sendGrid.api(request);
+            log.info("Email sent to {}. SendGrid response: {} {}", to, response.getStatusCode(), response.getBody());
+        } catch (IOException ex) {
+            log.error("Failed to send email to {}", to, ex);
+            throw ex;
+        }
     }
 }

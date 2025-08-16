@@ -15,9 +15,9 @@ export interface User {
 }
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
-  SUPPORT = 'SUPPORT',
-  AGENT = 'AGENT'
+  ADMIN = 'ROLE_ADMIN',
+  SUPPORT = 'ROLE_SUPPORT',
+  AGENT = 'ROLE_AGENT'
 }
 
 export interface LoginRequest {

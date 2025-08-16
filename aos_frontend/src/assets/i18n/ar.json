@@ -21,7 +21,13 @@
     "rememberMe": "تذكرني",
     "forgotPassword": "نسيت كلمة المرور؟",
     "loginSuccess": "تم تسجيل الدخول بنجاح",
-    "loginError": "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+    "loginError": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+    "loginSubtitle": "تسجيل الدخول إلى حسابك",
+    "emailPlaceholder": "بريدك@الإلكتروني.com",
+    "passwordPlaceholder": "كلمة المرور",
+    "emailError": "البريد الإلكتروني غير صحيح",
+    "passwordError": "كلمة المرور مطلوبة",
+    "loggingIn": "جاري تسجيل الدخول..."
   },
   "navigation": {
     "home": "الرئيسية",
@@ -33,6 +39,12 @@
     "complaints": "الشكاوى",
     "profile": "الملف الشخصي",
     "settings": "الإعدادات"
+  },
+  "roles": {
+    "admin": "مدير",
+    "support": "دعم",
+    "agent": "وكيل",
+    "visitor": "زائر"
   },
   "dashboard": {
     "welcome": "مرحباً",
@@ -48,5 +60,10 @@
     "completed": "مكتمل",
     "approved": "موافق عليه",
     "rejected": "مرفوض"
+  },
+  "language": {
+    "french": "Français",
+    "arabic": "العربية",
+    "changeLanguage": "تغيير اللغة"
   }
 }

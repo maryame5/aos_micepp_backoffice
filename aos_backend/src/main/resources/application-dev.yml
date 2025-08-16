@@ -33,6 +33,8 @@ spring:
           auth: true
           starttls:
             enable: true
+    test-connection: false
+    sender: melkhalfi@insea.ac.ma
 application:
   security:
     jwt:

@@ -21,13 +21,24 @@ export class LanguageService {
   }
 
   setLanguage(language: string): void {
+    // Set the language in the translate service
     this.translate.use(language);
+    
+    // Update the current language subject
     this.currentLanguageSubject.next(language);
+    
+    // Save to localStorage
     localStorage.setItem(this.LANGUAGE_KEY, language);
     
     // Set document direction for RTL languages
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
+    
+    // Add RTL class to body for styling
+    document.body.classList.toggle('rtl', language === 'ar');
+    document.body.classList.toggle('ltr', language !== 'ar');
+    
+    console.log(`Language changed to: ${language}`);
   }
 
   getCurrentLanguage(): string {
@@ -43,5 +54,10 @@ export class LanguageService {
       { code: 'fr', name: 'Français', flag: '🇫🇷' },
       { code: 'ar', name: 'العربية', flag: '🇲🇦' }
     ];
+  }
+
+  // Method to get translated text
+  getText(key: string, params?: any): string {
+    return this.translate.instant(key, params);
   }
 }
