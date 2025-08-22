@@ -2,24 +2,24 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/aos_db?useSSL=false&serverTimezone=UTC
-    username: aos_pg
-    password: Maryame1234
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres-aos:5432/aos_db}
+    username: ${SPRING_DATASOURCE_USERNAME:aos_pg}
+    password: ${SPRING_DATASOURCE_PASSWORD:Maryame1234}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create-drop}
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     database: POSTGRESQL
     open-in-view: false
     defer-datasource-initialization: true
   sql:
     init:
       mode: ALWAYS
-      data.sql: classpath:data.sql
       platform: POSTGRESQL
   mail: 
     host: smtp.sendgrid.net
@@ -39,12 +39,21 @@ application:
   security:
     jwt:
       secret-key: 0Xft560/AaGtvlV7KqGlKPj8pBRubzWYxzGpvgg0LyRZdAi3WksRrhCq5myck+hJ
-      expiration: 8640000
+      expiration: 86400000
   mailing:
     frontend:
       activation-url: http://localhost:4200/activate-account
 server:
   port: 8089
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: ALWAYS
 
 springdoc:
   api-docs:

@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.example.aos_backend.user.Demande;
+import com.example.aos_backend.user.Utilisateur;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,6 +22,8 @@ public interface DemandeRepository extends JpaRepository<Demande, Long> {
     @Query("SELECT d FROM Demande d ORDER BY d.dateSoumission DESC")
     List<Demande> findRecentDemandes();
     
-    @Query("SELECT d FROM Demande d WHERE d.agent.id = :agentId ORDER BY d.dateSoumission DESC")
-    List<Demande> findByAgentId(@Param("agentId") Integer agentId);
+    @Query("SELECT d FROM Demande d WHERE d.utilisateur.id = :utilisateurId ORDER BY d.dateSoumission DESC")
+    List<Demande> findByUtilisateurId(@Param("utilisateurId") Integer utilisateurId);
+
+    List<Demande> findByUtilisateur(Utilisateur utilisateur);
 }

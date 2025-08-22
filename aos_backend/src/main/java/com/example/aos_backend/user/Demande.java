@@ -9,7 +9,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.example.aos_backend.user.StatutDemande;
 
 @Getter
 @Setter
@@ -42,12 +41,12 @@ public class Demande {
     private String documentReponse;
 
     @ManyToOne
-    @JoinColumn(name = "agent_id", nullable = false)
-    private Agent agent;
+    @JoinColumn(name = "utilisateur_id", nullable = false)
+    private Utilisateur utilisateur;
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
-    private Service service;
+    private ServiceEntity service;
 
     @LastModifiedDate
     @Column(name = "updated_date", insertable = false)

@@ -131,8 +131,7 @@ import { UserRole } from '../../../../models/user.model';
                 <button 
                   mat-raised-button 
                   color="primary" 
-                  type="submit"
-                  [disabled]="userForm.invalid || isSubmitting">
+                  type="submit">
                   <mat-icon *ngIf="isSubmitting">hourglass_empty</mat-icon>
                  Créer l'utilisateur
                 </button>

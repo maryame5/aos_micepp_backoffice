@@ -42,7 +42,7 @@ public class RequestController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Demande>> getUserRequests(@PathVariable Integer userId) {
         try {
-            List<Demande> requests = demandeRepository.findByAgentId(userId);
+            List<Demande> requests = demandeRepository.findByUtilisateurId(userId);
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

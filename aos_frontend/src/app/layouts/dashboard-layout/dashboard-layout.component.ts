@@ -93,9 +93,9 @@ import { User, UserRole } from '../../models/user.model';
           </div>
         </mat-sidenav>
 
-        <!-- Main Content -->
+      
         <mat-sidenav-content>
-          <!-- Replace the old header with the new HeaderComponent -->
+         
           <app-header (toggleSidebar)="drawer.toggle()"></app-header>
           
           <main class="dashboard-main">

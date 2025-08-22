@@ -1,7 +1,10 @@
 package com.example.aos_backend.Controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,4 +36,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
     }
+
+    
+    
 }
