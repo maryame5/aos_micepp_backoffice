@@ -62,3 +62,8 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tryItOutEnabled: true
+
+
+app:
+  upload:
+    allowed-extensions: pdf,jpg,jpeg,png,doc,docx

@@ -10,8 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,10 +31,8 @@ public class Demande {
 
     private String commentaire;
 
-    @ElementCollection
-    @CollectionTable(name = "demande_documents", joinColumns = @JoinColumn(name = "demande_id"))
-    @Column(name = "document_path")
-    private List<String> documentsJustificatifs;
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DocumentJustificatif> documentsJustificatifs;
 
     @Column(name = "document_reponse")
     private String documentReponse;

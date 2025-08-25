@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserManagementService userManagementService ;
+    private final UserManagementService userManagementService;
 
     @PostMapping("/register-user")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -37,6 +37,4 @@ public class AdminController {
         }
     }
 
-    
-    
 }
