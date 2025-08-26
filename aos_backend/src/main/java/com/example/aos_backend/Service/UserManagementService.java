@@ -153,7 +153,8 @@ public class UserManagementService {
             EmailTemplateName.WELCOME_EMAIL,
             activationUrl,
             temporaryPassword,
-            "Welcome to AOS MICEPP - Your Account Details"
+            "Welcome to AOS MICEPP - Your Account Details",
+            role
         );
     }
 }

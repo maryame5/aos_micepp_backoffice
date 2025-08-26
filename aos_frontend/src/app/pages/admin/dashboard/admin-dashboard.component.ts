@@ -10,8 +10,10 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
 import { LoadingComponent } from '../../../components/shared/loading/loading.component';
 import { RequestService } from '../../../services/request.service';
 import { AuthService } from '../../../services/auth.service';
+import { UserService } from '../../../services/user.service';
+import { DashboardService } from '../../../services/dashboard.service';
 import { ServiceRequest } from '../../../models/request.model';
-import { User } from '../../../models/user.model';
+import { User, UserRole } from '../../../models/user.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -31,7 +33,7 @@ import { User } from '../../../models/user.model';
     <div class="admin-dashboard-container">
       <app-page-header 
         [title]="getWelcomeMessage()" 
-        subtitle="Vue d'ensemble de la plateforme AOS MICEPP">
+        [subtitle]="getUserRoleMessage()">
       </app-page-header>
 
       <app-loading *ngIf="isLoading"></app-loading>
@@ -47,7 +49,7 @@ import { User } from '../../../models/user.model';
               <div class="stat-info">
                 <div class="stat-number">{{ totalUsers }}</div>
                 <div class="stat-label">Utilisateurs</div>
-                <div class="stat-change positive">+12 ce mois</div>
+                <div class="stat-change positive">+{{ usersChangeThisMonth }} ce mois</div>
               </div>
             </div>
           </mat-card>
@@ -60,7 +62,7 @@ import { User } from '../../../models/user.model';
               <div class="stat-info">
                 <div class="stat-number">{{ totalRequests }}</div>
                 <div class="stat-label">Demandes</div>
-                <div class="stat-change positive">+8 aujourd'hui</div>
+                <div class="stat-change positive">+{{ requestsChangeToday }} aujourd'hui</div>
               </div>
             </div>
           </mat-card>
@@ -84,9 +86,9 @@ import { User } from '../../../models/user.model';
                 <mat-icon>sentiment_very_satisfied</mat-icon>
               </div>
               <div class="stat-info">
-                <div class="stat-number">98%</div>
+                <div class="stat-number">{{ satisfactionRate }}%</div>
                 <div class="stat-label">Satisfaction</div>
-                <div class="stat-change positive">+2% ce mois</div>
+                <div class="stat-change positive">+{{ satisfactionChangeThisMonth }}% ce mois</div>
               </div>
             </div>
           </mat-card>
@@ -114,6 +116,10 @@ import { User } from '../../../models/user.model';
                           {{ getStatusLabel(request.status) }}
                         </mat-chip>
                         <span class="request-date">{{ request.createdAt | date:'dd/MM/yyyy' }}</span>
+                        <span class="request-user" *ngIf="getRequestUser(request.userId)">
+                          Par: {{ getRequestUser(request.userId)?.firstName }} {{ getRequestUser(request.userId)?.lastName }}
+                          ({{ getRoleLabel(getRequestUser(request.userId)?.role) }})
+                        </span>
                       </div>
                     </div>
                     <div class="request-actions">
@@ -177,24 +183,24 @@ import { User } from '../../../models/user.model';
               <mat-card-content>
                 <div class="status-items">
                   <div class="status-item">
-                    <div class="status-indicator online"></div>
+                    <div class="status-indicator" [class]="systemStatus?.server || 'online'"></div>
                     <span>Serveur principal</span>
-                    <span class="status-value">En ligne</span>
+                    <span class="status-value">{{ getStatusLabel(systemStatus?.server) }}</span>
                   </div>
                   <div class="status-item">
-                    <div class="status-indicator online"></div>
+                    <div class="status-indicator" [class]="systemStatus?.database || 'online'"></div>
                     <span>Base de données</span>
-                    <span class="status-value">Opérationnelle</span>
+                    <span class="status-value">{{ getStatusLabel(systemStatus?.database) }}</span>
                   </div>
                   <div class="status-item">
-                    <div class="status-indicator warning"></div>
+                    <div class="status-indicator" [class]="systemStatus?.storage?.status || 'warning'"></div>
                     <span>Stockage</span>
-                    <span class="status-value">75% utilisé</span>
+                    <span class="status-value">{{ systemStatus?.storage?.usagePercentage || 75 }}% utilisé</span>
                   </div>
                   <div class="status-item">
-                    <div class="status-indicator online"></div>
+                    <div class="status-indicator" [class]="systemStatus?.api || 'online'"></div>
                     <span>API</span>
-                    <span class="status-value">Fonctionnelle</span>
+                    <span class="status-value">{{ getStatusLabel(systemStatus?.api) }}</span>
                   </div>
                 </div>
               </mat-card-content>
@@ -361,11 +367,18 @@ import { User } from '../../../models/user.model';
       display: flex;
       align-items: center;
       gap: 1rem;
+      flex-wrap: wrap;
     }
 
     .request-date {
       font-size: 0.75rem;
       color: #9ca3af;
+    }
+
+    .request-user {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-style: italic;
     }
 
     .mat-chip.status-pending {
@@ -487,33 +500,110 @@ import { User } from '../../../models/user.model';
 export class AdminDashboardComponent implements OnInit {
   currentUser: User | null = null;
   recentRequests: ServiceRequest[] = [];
+  allUsers: User[] = [];
   isLoading = true;
-  totalUsers = 156;
-  totalRequests = 342;
-  pendingRequests = 23;
+  
+  // Dashboard stats
+  totalUsers = 0;
+  totalRequests = 0;
+  pendingRequests = 0;
+  satisfactionRate = 0;
+  usersChangeThisMonth = 0;
+  requestsChangeToday = 0;
+  satisfactionChangeThisMonth = 0;
+  
+  // System status
+  systemStatus: any = null;
 
   constructor(
     private requestService: RequestService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService,
+    private dashboardService: DashboardService
   ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
-    this.loadRecentRequests();
+    this.loadDashboardData();
   }
 
-  loadRecentRequests(): void {
-    this.requestService.getRequests().subscribe({
+  loadDashboardData(): void {
+    this.isLoading = true;
+    
+    // Load dashboard stats
+    this.dashboardService.getDashboardStats().subscribe({
+      next: (stats) => {
+        this.totalUsers = stats.totalUsers;
+        this.totalRequests = stats.totalRequests;
+        this.pendingRequests = stats.pendingRequests;
+        this.satisfactionRate = stats.satisfactionRate;
+        this.usersChangeThisMonth = stats.usersChangeThisMonth;
+        this.requestsChangeToday = stats.requestsChangeToday;
+        this.satisfactionChangeThisMonth = stats.satisfactionChangeThisMonth;
+      },
+      error: (error) => {
+        console.error('Error loading dashboard stats:', error);
+        // Fallback to individual service calls
+        this.loadFallbackStats();
+      }
+    });
+
+    // Load system status
+    this.dashboardService.getSystemStatus().subscribe({
+      next: (status) => {
+        this.systemStatus = status;
+      },
+      error: (error) => {
+        console.error('Error loading system status:', error);
+        this.systemStatus = {
+          server: 'online',
+          database: 'online',
+          storage: { status: 'warning', usagePercentage: 75 },
+          api: 'online'
+        };
+      }
+    });
+
+    // Load recent requests
+    this.requestService.getRecentRequests(5).subscribe({
       next: (requests) => {
-        this.recentRequests = requests
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 5);
+        this.recentRequests = requests;
+      },
+      error: (error) => {
+        console.error('Error loading recent requests:', error);
+        this.recentRequests = [];
+      }
+    });
+
+    // Load all users for request user info
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        this.allUsers = users;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading requests:', error);
+        console.error('Error loading users:', error);
+        this.allUsers = [];
         this.isLoading = false;
       }
+    });
+  }
+
+  loadFallbackStats(): void {
+    // Fallback to individual service calls if dashboard stats fail
+    this.userService.getUsersCount().subscribe({
+      next: (count) => this.totalUsers = count,
+      error: () => this.totalUsers = 0
+    });
+
+    this.requestService.getRequestsCount().subscribe({
+      next: (count) => this.totalRequests = count,
+      error: () => this.totalRequests = 0
+    });
+
+    this.requestService.getPendingRequestsCount().subscribe({
+      next: (count) => this.pendingRequests = count,
+      error: () => this.pendingRequests = 0
     });
   }
 
@@ -523,7 +613,25 @@ export class AdminDashboardComponent implements OnInit {
     if (hour >= 12 && hour < 17) greeting = 'Bon après-midi';
     else if (hour >= 17) greeting = 'Bonsoir';
 
-    return `${greeting}, ${this.currentUser?.firstName || 'Administrateur'}`;
+    return `${greeting}, ${this.currentUser?.firstName || 'Administrateur'} ${this.currentUser?.lastName || ''}`;
+  }
+
+  getUserRoleMessage(): string {
+    const roleLabel = this.getRoleLabel(this.currentUser?.role);
+    return `Vue d'ensemble de la plateforme AOS MICEPP - Connecté en tant que ${roleLabel}`;
+  }
+
+  getRoleLabel(role?: string): string {
+    const labels: Record<string, string> = {
+      'ADMIN': 'Administrateur',
+      'SUPPORT': 'Support',
+      'AGENT': 'Agent'
+    };
+    return labels[role || ''] || role || 'Utilisateur';
+  }
+
+  getRequestUser(userId: string): User | undefined {
+    return this.allUsers.find(user => user.id === userId);
   }
 
   getStatusLabel(status: string): string {
@@ -532,7 +640,10 @@ export class AdminDashboardComponent implements OnInit {
       'IN_PROGRESS': 'En cours',
       'APPROVED': 'Approuvée',
       'REJECTED': 'Rejetée',
-      'COMPLETED': 'Terminée'
+      'COMPLETED': 'Terminée',
+      'online': 'En ligne',
+      'offline': 'Hors ligne',
+      'warning': 'Attention'
     };
     return labels[status] || status;
   }
@@ -542,6 +653,16 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   isAdmin(): boolean {
-    return this.currentUser?.role === 'ADMIN';
+    console.log('isAdmin() called');
+    console.log('Current user:', this.currentUser);
+    if (!this.currentUser) {
+      console.log('No current user, returning false');
+      return false;
+    }
+    const userRole = this.currentUser.role;
+    console.log('UserRole.ADMIN:', UserRole.ADMIN);
+    const isAdminResult = userRole === UserRole.ADMIN;
+    console.log('isAdmin result:', isAdminResult);
+    return isAdminResult;
   }
 }

@@ -66,6 +66,8 @@ public class AuthService {
         response.put("userId", user.getId());
         response.put("FirstName", user.getLastname());
         response.put("LastName", user.getFirstname());
+        response.put("phone", user.getPhone());
+        response.put("user",user);
 
         return response;
     }

@@ -21,7 +21,13 @@
     "rememberMe": "Se souvenir de moi",
     "forgotPassword": "Mot de passe oublié ?",
     "loginSuccess": "Connexion réussie",
-    "loginError": "Email ou mot de passe incorrect"
+    "loginError": "Email ou mot de passe incorrect",
+    "loginSubtitle": "Connectez-vous à votre espace",
+    "emailPlaceholder": "votre@email.com",
+    "passwordPlaceholder": "Mot de passe",
+    "emailError": "Email invalide",
+    "passwordError": "Mot de passe requis",
+    "loggingIn": "Connexion..."
   },
   "navigation": {
     "home": "Accueil",
@@ -33,6 +39,12 @@
     "complaints": "Réclamations",
     "profile": "Profil",
     "settings": "Paramètres"
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "support": "Support",
+    "agent": "Agent",
+    "visitor": "Visiteur"
   },
   "dashboard": {
     "welcome": "Bienvenue",
@@ -48,5 +60,10 @@
     "completed": "Terminée",
     "approved": "Approuvée",
     "rejected": "Rejetée"
+  },
+  "language": {
+    "french": "Français",
+    "arabic": "العربية",
+    "changeLanguage": "Changer de langue"
   }
 }

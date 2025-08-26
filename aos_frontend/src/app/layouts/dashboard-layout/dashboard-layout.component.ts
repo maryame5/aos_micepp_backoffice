@@ -1,33 +1,108 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
+import { HeaderComponent } from '../../components/shared/header/header.component';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatIconModule } from "@angular/material/icon";
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { AuthService } from '../../services/auth.service';
+import { User, UserRole } from '../../models/user.model';
 
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
   imports: [
     CommonModule,
-    RouterOutlet
-  ],
+    RouterOutlet,
+    HeaderComponent,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule,
+    MatDividerModule
+],
   template: `
     <div class="dashboard-layout">
-      <header class="dashboard-header">
-        <div class="header-content">
-          <div class="logo">
-            <div class="logo-icon">🏢</div>
-            <h1>AOS MICEPP</h1>
+      <mat-sidenav-container class="sidenav-container">
+        <!-- Sidebar -->
+        <mat-sidenav 
+          #drawer 
+          class="sidenav" 
+          fixedInViewport
+          [attr.role]="'navigation'"
+          [mode]="'over'"
+          [opened]="false">
+          <div class="sidebar-content">
+            <div class="sidebar-header">
+              <h3 class="sidebar-title">Navigation</h3>
+            </div>
+            
+            <mat-nav-list class="sidebar-nav">
+              <!-- Dashboard -->
+              <a mat-list-item routerLink="/admin/dashboard" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>dashboard</mat-icon>
+                <span matListItemTitle>Tableau de bord</span>
+              </a>
+
+              <!-- Users Management (Admin only) -->
+              <a mat-list-item routerLink="/admin/users" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+                <mat-icon matListItemIcon>people</mat-icon>
+                <span matListItemTitle>Utilisateurs</span>
+              </a>
+
+              <!-- Requests -->
+              <a mat-list-item routerLink="/admin/requests" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>assignment</mat-icon>
+                <span matListItemTitle>Demandes</span>
+              </a>
+
+              <!-- Complaints -->
+              <a mat-list-item routerLink="/admin/complaints" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>support_agent</mat-icon>
+                <span matListItemTitle>Réclamations</span>
+              </a>
+
+              <mat-divider></mat-divider>
+
+              <!-- Services Management (Admin only) -->
+              <a mat-list-item routerLink="/admin/services" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+                <mat-icon matListItemIcon>business_center</mat-icon>
+                <span matListItemTitle>Services</span>
+              </a>
+
+              <!-- News Management (Admin only) -->
+              <a mat-list-item routerLink="/admin/news" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+                <mat-icon matListItemIcon>article</mat-icon>
+                <span matListItemTitle>Actualités</span>
+              </a>
+
+              <mat-divider></mat-divider>
+
+              <!-- Reports -->
+              <a mat-list-item routerLink="/admin/reports" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>analytics</mat-icon>
+                <span matListItemTitle>Rapports</span>
+              </a>
+
+              <!-- Settings -->
+              <a mat-list-item routerLink="/admin/settings" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>settings</mat-icon>
+                <span matListItemTitle>Paramètres</span>
+              </a>
+            </mat-nav-list>
           </div>
-          <nav class="header-nav">
-            <a href="/" class="nav-link">Accueil</a>
-            <a href="/services" class="nav-link">Services</a>
-            <a href="/contact" class="nav-link">Contact</a>
-          </nav>
-        </div>
-      </header>
-      
-      <main class="dashboard-main">
-        <router-outlet></router-outlet>
-      </main>
+        </mat-sidenav>
+
+        <!-- Main Content -->
+        <mat-sidenav-content>
+          <!-- Replace the old header with the new HeaderComponent -->
+          <app-header (toggleSidebar)="drawer.toggle()"></app-header>
+          
+          <main class="dashboard-main">
+            <router-outlet></router-outlet>
+          </main>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
     </div>
   `,
   styles: [`
@@ -36,72 +111,88 @@ import { RouterOutlet } from '@angular/router';
       background-color: #f8fafc;
     }
 
-    .dashboard-header {
-      background: white;
+    .sidenav-container {
+      height: 100vh;
+    }
+
+    .sidenav {
+      width: 250px;
+    }
+
+    .sidebar-content {
+      padding: 0;
+    }
+
+    .sidebar-header {
       padding: 1rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      border-bottom: 1px solid #e2e8f0;
     }
 
-    .header-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .logo-icon {
-      font-size: 2rem;
-    }
-
-    .logo h1 {
-      color: #3b82f6;
+    .sidebar-title {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e293b;
     }
 
-    .header-nav {
-      display: flex;
-      gap: 1rem;
+    .sidebar-nav {
+      padding: 0;
     }
 
-    .nav-link {
+    .sidebar-link {
       color: #64748b;
       text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
       transition: all 0.3s ease;
     }
 
-    .nav-link:hover {
-      color: #3b82f6;
+    .sidebar-link:hover {
       background: #f1f5f9;
+      color: #3b82f6;
+    }
+
+    .sidebar-link.active {
+      background: #dbeafe;
+      color: #3b82f6;
+      border-right: 3px solid #3b82f6;
+    }
+
+    .sidebar-link mat-icon {
+      color: inherit;
     }
 
     .dashboard-main {
-      min-height: calc(100vh - 80px);
+      min-height: calc(100vh - 64px);
+      padding: 1rem;
     }
 
     @media (max-width: 768px) {
-      .header-content {
-        flex-direction: column;
-        gap: 1rem;
+      .sidenav {
+        width: 200px;
       }
-
-      .header-nav {
-        flex-wrap: wrap;
-        justify-content: center;
+      
+      .dashboard-main {
+        padding: 0.5rem;
       }
     }
   `]
 })
-export class DashboardLayoutComponent {}
+export class DashboardLayoutComponent implements OnInit {
+  currentUser: User | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  isAdmin(): boolean {
+    if (!this.currentUser) return false;
+    const userRole = this.currentUser.role.replace('ROLE_', '');
+    return userRole === UserRole.ADMIN ;
+  }
+}

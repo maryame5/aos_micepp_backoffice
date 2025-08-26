@@ -26,7 +26,10 @@
             }
           },
           "options": {
-            "assets": [],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
             "index": "src/index.html",
             "browser": "src/main.ts",
             "outputPath": "dist/aos_frontend",
@@ -47,14 +50,15 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "development": {
-              "buildTarget": "demo:build:development"
+              "buildTarget": "aos_frontend:build:development"
             },
             "production": {
-              "buildTarget": "demo:build:production"
+              "buildTarget": "aos_frontend:build:production"
             }
           },
           "defaultConfiguration": "development"
         }
+
       },
       "prefix": "app",
       "projectType": "application",

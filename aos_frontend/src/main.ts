@@ -11,20 +11,24 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
+import { AuthInterceptor } from './app/interceptors/auth.interceptor';
 
 // Translation loader factory
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
+console.log('Starting Angular application...');
+
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
     provideAnimations(),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([AuthInterceptor])),
     importProvidersFrom(
       MatSnackBarModule,
       TranslateModule.forRoot({
+        defaultLanguage: 'fr',
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,
@@ -38,4 +42,10 @@ bootstrapApplication(AppComponent, {
       })
     )
   ]
-}).catch(err => console.error(err));
+  
+}).then(() => {
+  console.log('Angular application bootstrapped successfully');
+}).catch(err => {
+  console.error('Bootstrap error:', err);
+  document.body.innerHTML = '<div style="padding: 20px; color: red;">Application failed to start. Check console for details.</div>';
+});

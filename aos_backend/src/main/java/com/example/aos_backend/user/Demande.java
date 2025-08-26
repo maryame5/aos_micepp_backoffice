@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.example.aos_backend.user.StatutDemande;
 
 @Getter
 @Setter
@@ -51,8 +52,4 @@ public class Demande {
     @LastModifiedDate
     @Column(name = "updated_date", insertable = false)
     private LocalDateTime lastModifiedDate;
-}
-
-enum StatutDemande {
-    EN_ATTENTE, EN_COURS, ACCEPTEE, REFUSEE
 }

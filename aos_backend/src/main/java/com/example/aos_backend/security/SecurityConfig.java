@@ -32,7 +32,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SecurityConfig {
 
     private final JwtFilter jwtAuthFilter ;
-    private final UserDetailsServiceImpl userDetailsService ;
+    private final UserDetailsServiceImpl userDetailsService;
     private final UtilisateurRepository utilisateurRepository;
     
     @Bean
@@ -47,8 +47,7 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> utilisateurRepository.findByEmail(username)
-            .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return userDetailsService;
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,8 +65,10 @@ public class SecurityConfig {
                         "/configuration/security",
                         "/swagger-ui/**",
                         "/webjars/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/api/v1/test/**"
                     ).permitAll()
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN"  )
                     .anyRequest().authenticated()
             )
             .sessionManagement(session ->

@@ -8,9 +8,10 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../../services/auth.service';
 import { LanguageService } from '../../../services/language.service';
-import { User } from '../../../models/user.model';
+import { User, UserRole } from '../../../models/user.model';
 import { Router } from '@angular/router';
 import { MatListModule } from "@angular/material/list";
+import { U } from '@angular/cdk/keycodes';
 
 @Component({
   selector: 'app-header',
@@ -33,7 +34,6 @@ import { MatListModule } from "@angular/material/list";
 
       <div class="header-title">
         <h1 class="text-xl font-semibold text-primary-700">AOS MICEPP</h1>
-        <span class="text-sm text-gray-500">{{ getWelcomeMessage() }}</span>
       </div>
 
       <div class="header-actions">
@@ -58,9 +58,7 @@ import { MatListModule } from "@angular/material/list";
 
         <!-- User Menu -->
         <button mat-button [matMenuTriggerFor]="userMenu" class="user-menu-btn" *ngIf="currentUser">
-          <div class="user-avatar">
-            <mat-icon>account_circle</mat-icon>
-          </div>
+          
           <div class="user-info" [class.rtl]="isRTL()">
             <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
             <span class="user-role">{{ getRoleLabel(currentUser.role) }}</span>
@@ -180,15 +178,12 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+     
+
     });
   }
 
-  getWelcomeMessage(): string {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 17) return 'Bon après-midi';
-    return 'Bonsoir';
-  }
+ 
 
   getCurrentLanguageFlag(): string {
     const currentLang = this.languageService.getCurrentLanguage();
@@ -215,7 +210,7 @@ export class HeaderComponent implements OnInit {
   }
 
   navigateToProfile(): void {
-    if (this.currentUser?.role === 'AGENT') {
+    if (this.currentUser?.role === UserRole.SUPPORT) {
       this.router.navigate(['/agent/profile']);
     } else {
       this.router.navigate(['/admin/profile']);

@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.aos_backend.Service.UserManagementService;
+
+import io.jsonwebtoken.io.IOException;
+
 import com.example.aos_backend.Service.EmailService;
 import com.example.aos_backend.Service.EmailTemplateName;
 
@@ -40,12 +43,13 @@ public class TestController{
                 request.getEmail(),
                 request.getFullName(),
                 EmailTemplateName.WELCOME_EMAIL,
+                "http://localhost:8080/activate",
                 "TestPassword123",
-                "USER",
-                "Test Email - Welcome to AOS MICEPP"
+                "Test Email - Welcome to AOS MICEPP",
+                "USER"
             );
             return ResponseEntity.ok("Test email sent successfully to " + request.getEmail());
-        } catch (MessagingException e) {
+        } catch (IOException e) {
             return ResponseEntity.badRequest().body("Email test failed: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Email test failed: " + e.getMessage());

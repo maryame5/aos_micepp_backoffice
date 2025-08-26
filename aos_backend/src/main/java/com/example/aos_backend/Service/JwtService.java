@@ -8,7 +8,11 @@ import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -69,6 +73,20 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<GrantedAuthority> extractAuthorities(String token) {
+        final Claims claims = extractAllClaims(token);
+        List<String> authorities = (List<String>) claims.get("authorities");
+        
+        if (authorities == null) {
+            return new ArrayList<>();
+        }
+        
+        return authorities.stream()
+            .map(authority -> new SimpleGrantedAuthority(authority))
+            .collect(Collectors.toList());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
