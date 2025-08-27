@@ -212,7 +212,7 @@ export class SidebarComponent implements OnInit {
     {
       label: 'Mes réclamations',
       icon: 'report_problem',
-      route: '/agent/complaints',
+      route: '/agent/Reclamation',
       roles: [UserRole.AGENT]
     },
     {

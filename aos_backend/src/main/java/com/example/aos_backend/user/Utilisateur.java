@@ -19,8 +19,7 @@ import lombok.experimental.SuperBuilder;
 import jakarta.persistence.*;
 import lombok.*;
 
-
-@Entity 
+@Entity
 @Table(name = "utilisateur") // optionnel mais conseillé
 @SuperBuilder
 @Getter
@@ -60,12 +59,8 @@ public class Utilisateur implements UserDetails, Principal {
     private boolean usingTemporaryPassword = false;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "utilisateur_roles",
-        joinColumns = @JoinColumn(name = "utilisateur_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id"),
-        uniqueConstraints = @UniqueConstraint(name = "uk_utilisateur_roles", columnNames = {"utilisateur_id", "role_id"})
-    )
+    @JoinTable(name = "utilisateur_roles", joinColumns = @JoinColumn(name = "utilisateur_id"), inverseJoinColumns = @JoinColumn(name = "role_id"), uniqueConstraints = @UniqueConstraint(name = "uk_utilisateur_roles", columnNames = {
+            "utilisateur_id", "role_id" }))
     @JsonIgnore
     private List<Role> roles;
 
@@ -81,8 +76,10 @@ public class Utilisateur implements UserDetails, Principal {
     @JsonIgnore
     private List<Token> tokens;
 
+    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Reclamation> reclamations;
 
-    
     @Override
     public String getUsername() {
         return email;
@@ -99,7 +96,7 @@ public class Utilisateur implements UserDetails, Principal {
             return List.of();
         }
         return this.roles.stream()
-                .map(r -> new SimpleGrantedAuthority("ROLE_"+r.getName()))
+                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getName()))
                 .collect(Collectors.toList());
     }
 
@@ -132,5 +129,4 @@ public class Utilisateur implements UserDetails, Principal {
         return firstname + " " + lastname;
     }
 
-    
 }
