@@ -18,6 +18,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -26,40 +27,51 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsServiceImpl userDetailsService;
 
     // In your JwtFilter class, add debugging
-@Override
-protected void doFilterInternal(HttpServletRequest request, 
-                               HttpServletResponse response, 
-                               FilterChain filterChain) throws ServletException, IOException {
-    
-    final String authHeader = request.getHeader("Authorization");
-    final String jwt;
-    final String userEmail;
-    
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
-    
-    jwt = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(jwt); // Make sure this extracts email correctly
-    
-    System.out.println("Extracted email from JWT: " + userEmail); // Debug line
-    
-    if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-        
-        if (jwtService.isTokenValid(jwt, userDetails)) {
-            // Extract authorities from JWT token instead of database
-            var authorities = jwtService.extractAuthorities(jwt);
-            
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    authorities
-            );
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
+        try {
+            final String authHeader = request.getHeader("Authorization");
+            final String jwt;
+            final String userEmail;
+
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            jwt = authHeader.substring(7);
+            userEmail = jwtService.extractUsername(jwt); // Make sure this extracts email correctly
+
+            System.out.println("Extracted email from JWT: " + userEmail); // Debug line
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+
+                if (jwtService.isTokenValid(jwt, userDetails)) {
+                    // Extract authorities from JWT token instead of database
+                    var authorities = jwtService.extractAuthorities(jwt);
+
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            authorities);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            }
+            filterChain.doFilter(request, response);
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{\"error\": \"TOKEN_EXPIRED\", \"message\": \"Your session has expired. Please login again.\"}");
+        } catch (Exception ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter()
+                    .write("{\"error\": \"INVALID_TOKEN\", \"message\": \"Invalid authentication token.\"}");
         }
     }
-    filterChain.doFilter(request, response);
-}}
+}

@@ -160,13 +160,18 @@ export class AuthService {
     }
   }
 
-  private handleError(error: HttpErrorResponse): Observable<never> {
+  private handleError = (error: HttpErrorResponse): Observable<never> => {
     let errorMessage = 'An error occurred';
     if (error.status === 401) {
+     if (error.error?.error === 'TOKEN_EXPIRED') {
+      errorMessage = 'Session expirée. Veuillez vous reconnecter.';
+      this.logout();
+    } else {
       errorMessage = 'Invalid credentials';
-    } else if (error.status === 400) {
-      errorMessage = typeof error.error === 'string' ? error.error : 'Bad request';
     }
+  } else if (error.status === 400) {
+    errorMessage = typeof error.error === 'string' ? error.error : 'Bad request';
+  }
     return throwError(() => new Error(errorMessage));
   }
 }
