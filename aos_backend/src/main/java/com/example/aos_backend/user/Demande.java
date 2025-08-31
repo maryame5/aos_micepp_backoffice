@@ -8,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -20,10 +21,11 @@ import lombok.*;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "demande")
+@ToString(exclude = { "documentsJustificatifs", "documentReponse" })
 public class Demande {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @CreatedDate
     @Column(name = "date_soumission", updatable = false)
@@ -32,14 +34,18 @@ public class Demande {
     @Enumerated(EnumType.STRING)
     private StatutDemande statut;
 
+    @Column(name = "commentaire")
     private String commentaire;
 
-    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference
     private List<DocumentJustificatif> documentsJustificatifs;
 
-    @Column(name = "document_reponse")
-    private String documentReponse;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "document_reponse_id")
+    @JsonManagedReference
+
+    private DocumentJustificatif documentReponse;
 
     @ManyToOne
     @JoinColumn(name = "utilisateur_id", nullable = false)
@@ -52,4 +58,5 @@ public class Demande {
     @LastModifiedDate
     @Column(name = "updated_date", insertable = false)
     private LocalDateTime lastModifiedDate;
+
 }

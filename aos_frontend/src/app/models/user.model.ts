@@ -14,6 +14,17 @@ export interface User {
   updatedAt: Date;
 }
 
+export interface UserDTO {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  usingTemporaryPassword: boolean;
+  phone: string;
+  cin: string;
+  matricule: string;
+}
+
 export enum UserRole {
   ADMIN = 'ROLE_ADMIN',
   SUPPORT = 'ROLE_SUPPORT',

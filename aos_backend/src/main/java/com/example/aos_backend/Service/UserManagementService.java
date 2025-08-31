@@ -11,12 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.aos_backend.Controller.RegisterationRequest;
 import com.example.aos_backend.Repository.*;
+import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.Admin;
 import com.example.aos_backend.user.Agent;
 import com.example.aos_backend.user.Role;
 import com.example.aos_backend.user.Support;
 import com.example.aos_backend.user.Utilisateur;
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class UserManagementService {
@@ -38,7 +40,7 @@ public class UserManagementService {
             throw new IllegalArgumentException("Email already exists: " + request.getEmail());
         }
 
-        if (userRepository.findByCin(request.getCin()).isPresent() ) {
+        if (userRepository.findByCin(request.getCin()).isPresent()) {
             throw new IllegalArgumentException("CIN already exists: " + request.getCin());
         }
 
@@ -48,7 +50,7 @@ public class UserManagementService {
 
         // Get the role
         Role userRole = roleRepository.findByName(request.getRole().toUpperCase())
-            .orElseThrow(() -> new IllegalArgumentException("Role not found: " + request.getRole()));
+                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + request.getRole()));
 
         // Generate temporary password
         String temporaryPassword = generateTemporaryPassword();
@@ -63,31 +65,31 @@ public class UserManagementService {
                 break;
             case "SUPPORT":
                 createSupportUser(request, userRole, temporaryPassword);
-                
-               
+
                 break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + request.getRole());
         }
 
         // Send welcome email with temporary password
-        sendWelcomeEmail(request.getEmail(), request.getFirstname() + " " + request.getLastname(), temporaryPassword, request.getRole());
+        sendWelcomeEmail(request.getEmail(), request.getFirstname() + " " + request.getLastname(), temporaryPassword,
+                request.getRole());
     }
 
     private Utilisateur createUser(RegisterationRequest request, Role role, String temporaryPassword) {
         Utilisateur utilisateur = Utilisateur.builder()
-        .firstname(request.getFirstname())
-        .lastname(request.getLastname())
-        .email(request.getEmail())
-        .password(passwordEncoder.encode(temporaryPassword))
-        .cin(request.getCin())
-        .phone(request.getPhone())
-        .matricule(request.getMatricule())
-        .accountLocked(false)
-        .enabled(true)
-        .usingTemporaryPassword(true)
-        .roles(List.of(role))
-        .build();
+                .firstname(request.getFirstname())
+                .lastname(request.getLastname())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(temporaryPassword))
+                .cin(request.getCin())
+                .phone(request.getPhone())
+                .matricule(request.getMatricule())
+                .accountLocked(false)
+                .enabled(true)
+                .usingTemporaryPassword(true)
+                .roles(List.of(role))
+                .build();
         userRepository.save(utilisateur);
         return utilisateur;
     }
@@ -96,44 +98,39 @@ public class UserManagementService {
 
         Utilisateur utilisateur = createUser(request, role, temporaryPassword);
         Agent agent = Agent.builder()
-            .utilisateur(utilisateur)
-            .build();
+                .utilisateur(utilisateur)
+                .build();
         agentRepository.save(agent);
     }
-
 
     private void createAdminUser(RegisterationRequest request, Role role, String temporaryPassword) {
         Utilisateur utilisateur = createUser(request, role, temporaryPassword);
 
         Admin admin = Admin.builder()
-            .utilisateur(utilisateur)
-            .build();
+                .utilisateur(utilisateur)
+                .build();
         adminRepository.save(admin);
 
         Agent agent = Agent.builder()
-            .utilisateur(utilisateur)
-            .build();
+                .utilisateur(utilisateur)
+                .build();
         agentRepository.save(agent);
     }
-       
-    
 
     private void createSupportUser(RegisterationRequest request, Role role, String temporaryPassword) {
         // 1) Crée un utilisateur "générique"
-     Utilisateur utilisateur = createUser(request, role, temporaryPassword);
+        Utilisateur utilisateur = createUser(request, role, temporaryPassword);
 
-      
-       Support support = Support.builder()
-            .utilisateur(utilisateur)
-            .build();
+        Support support = Support.builder()
+                .utilisateur(utilisateur)
+                .build();
         supportRepository.save(support);
 
         Agent agent = Agent.builder()
-            .utilisateur(utilisateur)
-            .build();
+                .utilisateur(utilisateur)
+                .build();
         agentRepository.save(agent);
     }
-   
 
     private String generateTemporaryPassword() {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
@@ -146,15 +143,33 @@ public class UserManagementService {
         return passwordBuilder.toString();
     }
 
-    private void sendWelcomeEmail(String email, String fullName, String temporaryPassword, String role) throws Exception {
+    private void sendWelcomeEmail(String email, String fullName, String temporaryPassword, String role)
+            throws Exception {
         emailService.sendEmail(
-            email,
-            fullName,
-            EmailTemplateName.WELCOME_EMAIL,
-            activationUrl,
-            temporaryPassword,
-            "Welcome to AOS MICEPP - Your Account Details",
-            role
-        );
+                email,
+                fullName,
+                EmailTemplateName.WELCOME_EMAIL,
+                activationUrl,
+                temporaryPassword,
+                "Welcome to AOS MICEPP - Your Account Details",
+                role);
     }
+
+    public List<UserDTO> getAllUsers() {
+        List<Utilisateur> users = userRepository.findAll();
+
+        return users.stream().map(user -> UserDTO.builder()
+                .id(user.getId())
+                .username(user.getFirstname() + " " + user.getLastname())
+                .email(user.getEmail())
+                .role(user.getRoles().isEmpty() ? "N/A" : user.getRoles().get(0).getName())
+                .usingTemporaryPassword(user.isUsingTemporaryPassword())
+                .phone(user.getPhone())
+                .cin(user.getCin())
+                .matricule(user.getMatricule())
+                .build())
+                .toList();
+
+    }
+
 }

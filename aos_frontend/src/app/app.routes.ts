@@ -58,6 +58,12 @@ export const routes: Routes = [
         data: { roles: [UserRole.ADMIN] }
       },
       {
+        path: 'users/:id',
+        loadComponent: () => import('./pages/admin/users/detail_user/detail_user.component').then(m => m.UserDetailsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
+      },
+      {
         path: 'requests',
         loadComponent: () => import('./pages/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent)
       },
@@ -85,36 +91,7 @@ export const routes: Routes = [
     ]
   },
 
-  // Agent routes
-  {
-    path: 'agent',
-    loadComponent: () => import('./layouts/dashboard-layout/dashboard-layout.component').then(m => m.DashboardLayoutComponent),
-    canActivate: [AuthGuard],
-    data: { roles: [UserRole.AGENT] },
-    children: [
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./pages/agent/dashboard/agent-dashboard.component').then(m => m.AgentDashboardComponent)
-      },
-      {
-        path: 'requests',
-        loadComponent: () => import('./pages/agent/requests/agent-requests.component').then(m => m.AgentRequestsComponent)
-      },
-      {
-        path: 'complaints',
-        loadComponent: () => import('./pages/agent/complaints/agent-complaints.component').then(m => m.AgentComplaintsComponent)
-      },
-      {
-        path: 'profile',
-        loadComponent: () => import('./pages/agent/profile/agent-profile.component').then(m => m.AgentProfileComponent)
-      },
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
-      }
-    ]
-  },
+
 
   // Error routes
   {

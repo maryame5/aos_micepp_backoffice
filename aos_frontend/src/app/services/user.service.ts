@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { User } from '../models/user.model';
+import { catchError, map } from 'rxjs/operators';
+import { User, UserDTO, UserRole } from '../models/user.model';
 
 export interface RegisterUserRequest {
   firstName: string;
@@ -18,7 +18,7 @@ export interface RegisterUserRequest {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8089/AOS_MICEPP/api/v1/admin';
+  private apiUrl = 'http://localhost:8089/AOS_MICEPP/api/v1/admin/users';
 
   constructor(private http: HttpClient) {}
 
@@ -39,20 +39,29 @@ export class UserService {
    * Get all users
    */
   getAllUsers(): Observable<User[]> {
-    return this.http.get<User[]>(this.apiUrl)
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.http.get<UserDTO[]>(this.apiUrl).pipe(
+      map(users => users.map(user => ({
+        id: user.id.toString(),
+        email: user.email,
+        firstName: user.username.split(' ')[0] || '',
+        lastName: user.username.split(' ')[1] || '',
+        role: `ROLE_${user.role}` as UserRole,
+        isActive: !user.usingTemporaryPassword,
+        phoneNumber: user.phone,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as User))),
+      catchError(this.handleError)
+    );
   }
 
   /**
    * Get user by ID
    */
-  getUserById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${id}`)
-      .pipe(
-        catchError(this.handleError)
-      );
+  getUserById(id: string): Observable<UserDTO> {
+    return this.http.get<UserDTO>(`${this.apiUrl}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   /**
@@ -84,6 +93,14 @@ export class UserService {
         catchError(this.handleError)
       );
   }
+
+  updateUser(user: UserDTO): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${user.id}`, user)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
 
   /**
    * Handle HTTP errors

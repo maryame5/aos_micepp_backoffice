@@ -5,6 +5,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import com.example.aos_backend.Repository.UtilisateurRepository;
+import com.example.aos_backend.Service.UserManagementService;
+import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.Utilisateur;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,11 +19,12 @@ import java.util.Map;
 public class UserController {
 
     private final UtilisateurRepository utilisateurRepository;
+    private final UserManagementService userService;
 
     @GetMapping
-    public ResponseEntity<List<Utilisateur>> getAllUsers() {
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
         try {
-            List<Utilisateur> users = utilisateurRepository.findAll();
+            List<UserDTO> users = userService.getAllUsers();
             return ResponseEntity.ok(users);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
@@ -29,11 +32,56 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Utilisateur> getUserById(@PathVariable Integer id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         try {
             return utilisateurRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                    .map(user -> UserDTO.builder()
+                            .id(user.getId())
+                            .username(user.getFirstname() + " " + user.getLastname())
+                            .email(user.getEmail())
+                            .role(user.getRoles().isEmpty() ? "N/A" : user.getRoles().get(0).getName())
+                            .usingTemporaryPassword(user.isUsingTemporaryPassword())
+                            .phone(user.getPhone())
+                            .cin(user.getCin())
+                            .matricule(user.getMatricule())
+                            .build())
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDTO) {
+        try {
+            return utilisateurRepository.findById(id)
+                    .map(existingUser -> {
+                        // Mettre à jour les champs modifiables
+                        if (userDTO.getPhone() != null) {
+                            existingUser.setPhone(userDTO.getPhone());
+                        }
+                        if (userDTO.getEmail() != null) {
+                            existingUser.setEmail(userDTO.getEmail());
+                        }
+                        // Ajouter d'autres champs selon vos besoins
+
+                        Utilisateur savedUser = utilisateurRepository.save(existingUser);
+
+                        UserDTO updatedDTO = UserDTO.builder()
+                                .id(savedUser.getId())
+                                .username(savedUser.getFirstname() + " " + savedUser.getLastname())
+                                .email(savedUser.getEmail())
+                                .role(savedUser.getRoles().isEmpty() ? "N/A" : savedUser.getRoles().get(0).getName())
+                                .usingTemporaryPassword(savedUser.isUsingTemporaryPassword())
+                                .phone(savedUser.getPhone())
+                                .cin(savedUser.getCin())
+                                .matricule(savedUser.getMatricule())
+                                .build();
+
+                        return ResponseEntity.ok(updatedDTO);
+                    })
+                    .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -67,9 +115,9 @@ public class UserController {
             // Get users created in the last 30 days
             LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
             List<Utilisateur> recentUsers = utilisateurRepository.findAll().stream()
-                .filter(user -> user.getCreatedDate() != null && 
-                               user.getCreatedDate().isAfter(thirtyDaysAgo))
-                .toList();
+                    .filter(user -> user.getCreatedDate() != null &&
+                            user.getCreatedDate().isAfter(thirtyDaysAgo))
+                    .toList();
             return ResponseEntity.ok(recentUsers);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

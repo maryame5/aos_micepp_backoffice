@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.aos_backend.Service.UserManagementService;
+import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.Controller.RegisterationRequest;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
