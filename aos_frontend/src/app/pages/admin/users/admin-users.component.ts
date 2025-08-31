@@ -39,6 +39,8 @@ import { User, UserDTO } from '../../../models/user.model';
           <mat-card-title>Liste des utilisateurs</mat-card-title>
           <mat-card-subtitle>Consultez et gérez tous les comptes utilisateurs</mat-card-subtitle>
         </mat-card-header>
+        <br>
+        <br>
         <mat-card-content>
           <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
             <ng-container matColumnDef="id">
