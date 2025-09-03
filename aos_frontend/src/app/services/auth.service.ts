@@ -37,10 +37,11 @@ export class AuthService {
           firstName: response.firstName,
           lastName: response.lastName,
           role: response.userType,
-
           createdAt: new Date(), // Current timestamp
-          updatedAt: new Date(), // Current timestamp
-         
+          phone:" ",
+          updatedAt: new Date(),
+
+        
           isActive: false
         };
         localStorage.setItem(this.TOKEN_KEY, response.token);

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { HeaderComponent } from '../../components/shared/header/header.component';
+import { SidebarComponent } from '../../components/shared/sidebar/sidebar.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from "@angular/material/icon";
 import { MatListModule } from '@angular/material/list';
@@ -25,9 +26,9 @@ import { User, UserRole } from '../../models/user.model';
     <div class="dashboard-layout">
       <mat-sidenav-container class="sidenav-container">
         <!-- Sidebar -->
-        <mat-sidenav 
-          #drawer 
-          class="sidenav" 
+        <mat-sidenav
+          #drawer
+          class="sidenav"
           fixedInViewport
           [attr.role]="'navigation'"
           [mode]="'over'"

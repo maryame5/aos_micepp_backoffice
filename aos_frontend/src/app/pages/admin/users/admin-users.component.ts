@@ -7,7 +7,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { PageHeaderComponent } from '../../../components/shared/page-header/page-header.component';
 import { UserService } from '../../../services/user.service';
-import { User, UserDTO } from '../../../models/user.model';
+import { UserDTO } from '../../../models/user.model';
+import { FormsModule } from '@angular/forms'; 
+import { MatFormFieldModule } from '@angular/material/form-field'; 
+import { MatInputModule } from '@angular/material/input'; 
+import { MatSelectModule } from '@angular/material/select'; 
 
 @Component({
   selector: 'app-admin-users',
@@ -19,7 +23,11 @@ import { User, UserDTO } from '../../../models/user.model';
     MatButtonModule,
     MatIconModule,
     MatTableModule,
-    PageHeaderComponent
+    PageHeaderComponent,
+    FormsModule,
+    MatFormFieldModule, 
+    MatInputModule,
+    MatSelectModule
   ],
   template: `
     <div class="users-container">
@@ -39,44 +47,83 @@ import { User, UserDTO } from '../../../models/user.model';
           <mat-card-title>Liste des utilisateurs</mat-card-title>
           <mat-card-subtitle>Consultez et gérez tous les comptes utilisateurs</mat-card-subtitle>
         </mat-card-header>
-        <br>
-        <br>
+        
         <mat-card-content>
-          <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef> ID </th>
-              <td mat-cell *matCellDef="let user"> {{ user.id }} </td>
-            </ng-container>
-            <ng-container matColumnDef="username">
-              <th mat-header-cell *matHeaderCellDef> Nom </th>
-              <td mat-cell *matCellDef="let user"> {{ user.firstName }} {{ user.lastName }} </td>
-            </ng-container>
-            <ng-container matColumnDef="email">
-              <th mat-header-cell *matHeaderCellDef> Email </th>
-              <td mat-cell *matCellDef="let user"> {{ user.email }} </td>
-            </ng-container>
-            <ng-container matColumnDef="role">
-              <th mat-header-cell *matHeaderCellDef> Rôle </th>
-              <td mat-cell *matCellDef="let user"> {{ user.role }} </td>
-            </ng-container>
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef> Actions </th>
-              <td mat-cell *matCellDef="let user">
-                <button mat-icon-button [routerLink]="['/admin/users', user.id]" color="primary">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-              </td>
-            </ng-container>
+          <!-- Filters -->
+          <div class="filters-container">
+            <mat-form-field >
+              <mat-label>Rechercher</mat-label>
+              <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="ID, Nom, Email, Rôle, Département...">
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
+            <mat-form-field >
+              <mat-label>Rôle</mat-label>
+              <mat-select [ngModel]="selectedRole" (ngModelChange)="applyFilters()">
+                <mat-option value="">Tous les rôles</mat-option>
+                <mat-option value="AGENT">Agent</mat-option>
+                <mat-option value="SUPPORT">Support</mat-option>
+                <mat-option value="ADMIN">Administrateur</mat-option>
+              </mat-select>
+            </mat-form-field>
 
-          <div class="no-users" *ngIf="dataSource.data.length === 0">
-            <mat-icon class="placeholder-icon">people</mat-icon>
-            <h3>Aucun utilisateur trouvé</h3>
-            <p>Cliquez sur "Nouvel utilisateur" pour créer un nouveau compte.</p>
+            <mat-form-field >
+              <mat-label>Département</mat-label>
+              <mat-select [ngModel]="selectedDepartment" (ngModelChange)="applyFilters()">
+                <mat-option value="">Tous les départements</mat-option>
+                <mat-option *ngFor="let dept of uniqueDepartments" [value]="dept">{{ dept }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-icon-button (click)="clearFilters()" title="Effacer les filtres">
+              <mat-icon>clear</mat-icon>
+            </button>
           </div>
+
+          <!-- Requests Table -->
+          <div class="users-table" *ngIf="dataSource.data.length > 0; else noUsers">
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> ID </th>
+                <td mat-cell *matCellDef="let user"> {{ user.id }} </td>
+              </ng-container>
+              <ng-container matColumnDef="username">
+                <th mat-header-cell *matHeaderCellDef> Nom </th>
+                <td mat-cell *matCellDef="let user"> {{ user.firstName }} {{ user.lastName }} </td>
+              </ng-container>
+              <ng-container matColumnDef="email">
+                <th mat-header-cell *matHeaderCellDef> Email </th>
+                <td mat-cell *matCellDef="let user"> {{ user.email }} </td>
+              </ng-container>
+              <ng-container matColumnDef="role">
+                <th mat-header-cell *matHeaderCellDef> Rôle </th>
+                <td mat-cell *matCellDef="let user"> {{ user.role }} </td>
+              </ng-container>
+              <ng-container matColumnDef="department">
+                <th mat-header-cell *matHeaderCellDef> Département </th>
+                <td mat-cell *matCellDef="let user"> {{ user.department }} </td>
+              </ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let user">
+                  <button mat-icon-button [routerLink]="['/admin/users', user.id]" color="primary">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+
+          <ng-template #noUsers>
+            <div class="no-users">
+              <mat-icon class="placeholder-icon">people</mat-icon>
+              <h3>Aucun utilisateur trouvé</h3>
+              <p>Cliquez sur "Nouvel utilisateur" pour créer un nouveau compte.</p>
+            </div>
+          </ng-template>
         </mat-card-content>
       </mat-card>
     </div>
@@ -88,9 +135,39 @@ import { User, UserDTO } from '../../../models/user.model';
       margin: 0 auto;
     }
 
-    .mat-table {
+    .filters-container {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .filters-container mat-form-field {
+      min-width: 200px;
+     border:1px;
+     border-color:black;
+    }
+
+    .users-table {
+      overflow: auto;
+    }
+  
+    
+
+    table {
       width: 100%;
-      margin-top: 1rem;
+    }
+    
+
+    th.mat-header-cell, td.mat-cell {
+      padding: 16px;
+      text-align: left;
+    }
+
+    tr.mat-row:hover {
+      background-color: #f5f5f5;
     }
 
     .no-users {
@@ -111,16 +188,37 @@ import { User, UserDTO } from '../../../models/user.model';
       margin: 1rem 0;
       color: #374151;
     }
+    
 
     .no-users p {
       margin: 0.5rem 0;
       line-height: 1.6;
     }
+
+    @media (max-width: 768px) {
+      .users-container {
+        padding: 0.5rem;
+      }
+
+      .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filters-container mat-form-field {
+        width: 100%;
+        min-width: unset;
+      }
+    }
   `]
 })
 export class AdminUsersComponent implements OnInit {
-  dataSource = new MatTableDataSource<User>([]);
-  displayedColumns: string[] = ['id', 'username', 'email', 'role', 'actions'];
+  dataSource = new MatTableDataSource<UserDTO>([]);
+  displayedColumns: string[] = ['id', 'username', 'email', 'role', 'department', 'actions'];
+  searchTerm = '';
+  selectedRole = '';
+  selectedDepartment = '';
+  uniqueDepartments: String[] = [];
 
   constructor(private userService: UserService) {}
 
@@ -128,11 +226,47 @@ export class AdminUsersComponent implements OnInit {
     this.userService.getAllUsers().subscribe({
       next: (users) => {
         this.dataSource.data = users ?? [];
+        this.updateUniqueDepartments();
+        this.applyFilters();
+        console.log("Received users:", users);
       },
       error: (err) => {
         console.error('Failed to load users:', err);
         this.dataSource.data = [];
       }
     });
+  }
+
+  applyFilters(): void {
+    this.dataSource.filterPredicate = (data: UserDTO, filter: string) => {
+      const searchValue = this.searchTerm.toLowerCase();
+      console.log("data",data);
+
+      const matchesSearch = !this.searchTerm ||
+        data.id.toString().includes(searchValue) ||
+        `${data.firstname} ${data.lastname}`.toLowerCase().includes(searchValue) ||
+        data.email.toLowerCase().includes(searchValue) ||
+        data.role.toLowerCase().includes(searchValue) ||
+        (data.department || '').toLowerCase().includes(searchValue);
+
+      const matchesRole = !this.selectedRole || data.role.toLowerCase() === this.selectedRole.toLowerCase();
+      const matchesDepartment = !this.selectedDepartment || (data.department ||"").toLowerCase() === this.selectedDepartment.toLowerCase();
+    
+
+      return matchesSearch && matchesRole && matchesDepartment;
+    };
+    this.dataSource.filter = 'apply'; // Trigger filter
+  }
+
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedRole = '';
+    this.selectedDepartment = '';
+    this.applyFilters();
+  }
+
+  updateUniqueDepartments(): void {
+    const departments = this.dataSource.data.map(user => user.department).filter(dept => !!dept);
+    this.uniqueDepartments = [...new Set(departments)];
   }
 }

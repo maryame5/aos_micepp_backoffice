@@ -55,6 +55,10 @@ public class Demande {
     @JoinColumn(name = "service_id", nullable = false)
     private ServiceEntity service;
 
+    @ManyToOne
+    @JoinColumn(name = "assigned_to_id")
+    private Utilisateur assignedTo;
+
     @LastModifiedDate
     @Column(name = "updated_date", insertable = false)
     private LocalDateTime lastModifiedDate;

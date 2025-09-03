@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.aos_backend.Service.DemandeService;
@@ -20,7 +22,9 @@ import com.example.aos_backend.Util.DocumentUtil;
 import com.example.aos_backend.dto.DemandeDTO;
 import com.example.aos_backend.user.Demande;
 import com.example.aos_backend.user.DocumentJustificatif;
+import com.example.aos_backend.user.Utilisateur;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -82,5 +86,88 @@ public class DemandeController {
         byte[] content = DocumentUtil.decompressDocument(document.getContent());
 
         return new ResponseEntity<>(content, HttpStatus.OK);
+    }
+
+    @GetMapping("/support-users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Map<String, Object>>> getAllSupportUsers() {
+        try {
+            List<Utilisateur> supportUsers = demandeService.getAllSupportUsers();
+            List<Map<String, Object>> result = supportUsers.stream()
+                    .map(user -> {
+                        Map<String, Object> userMap = new java.util.HashMap<>();
+                        userMap.put("id", user.getId());
+                        userMap.put("username", user.getUsername());
+                        userMap.put("email", user.getEmail());
+                        userMap.put("firstname", user.getFirstname());
+                        userMap.put("lastname", user.getLastname());
+                        userMap.put("role", "SUPPORT");
+                        return userMap;
+                    })
+                    .toList();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @PatchMapping("/{id}/assign")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<DemandeDTO> assignRequest(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+        try {
+            Integer userId = payload.get("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            DemandeDTO updatedDemande = demandeService.assignRequest(id, userId);
+            return ResponseEntity.ok(updatedDemande);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> getRequestsCount() {
+        try {
+            long count = demandeService.getAllDemandes().size();
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L);
+        }
+    }
+
+    @GetMapping("/count/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Long> getPendingRequestsCount() {
+        try {
+            long count = demandeService.getAllDemandes().stream()
+                    .filter(d -> "EN_ATTENTE".equals(d.getStatut()))
+                    .count();
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(0L);
+        }
+    }
+
+    @GetMapping("/recent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<DemandeDTO>> getRecentRequests(@RequestParam(defaultValue = "5") int limit) {
+        try {
+            List<DemandeDTO> recentRequests = demandeService.getAllDemandes().stream()
+                    .sorted((a, b) -> b.getDateSoumission().compareTo(a.getDateSoumission()))
+                    .limit(limit)
+                    .toList();
+            return ResponseEntity.ok(recentRequests);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
     }
 }

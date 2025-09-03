@@ -21,6 +21,7 @@ import com.example.aos_backend.user.LogementService;
 import com.example.aos_backend.user.SanteSocialeService;
 import com.example.aos_backend.user.ServiceEntity;
 import com.example.aos_backend.user.StatutDemande;
+import com.example.aos_backend.user.Support;
 import com.example.aos_backend.user.TransportService;
 import com.example.aos_backend.user.Utilisateur;
 
@@ -35,6 +36,7 @@ public class DemandeService {
     private final DemandeRepository demandeRepository;
     private final UtilisateurRepository userRepository;
     private final ServiceRepository serviceRepository;
+    private final SupportRepository supportRepository;
 
     @Transactional
     public List<DemandeDTO> getAllDemandes() {
@@ -97,6 +99,9 @@ public class DemandeService {
                                             : null)
                                     .build()
                             : null)
+                    .assignedToId(d.getAssignedTo() != null ? d.getAssignedTo().getId() : null)
+                    .assignedToUsername(
+                            d.getAssignedTo() != null ? d.getAssignedTo().fullname() : null)
                     .build()).toList();
 
         } catch (Exception e) {
@@ -148,6 +153,8 @@ public class DemandeService {
                                         : null)
                                 .build()
                         : null)
+                .assignedToId(d.getAssignedTo() != null ? d.getAssignedTo().getId() : null)
+                .assignedToUsername(d.getAssignedTo() != null ? d.getAssignedTo().fullname() : null)
                 .build();
     }
 
@@ -163,6 +170,68 @@ public class DemandeService {
         ServiceEntity service = demande.getService();
 
         return extractServiceSpecificData(service);
+    }
+
+    @Transactional
+    public List<Utilisateur> getAllSupportUsers() {
+        return supportRepository.findAll().stream()
+                .map(Support::getUtilisateur)
+                .toList();
+    }
+
+    @Transactional
+    public DemandeDTO assignRequest(Long id, Integer userId) {
+        Demande demande = demandeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée pour l'ID: " + id));
+        Utilisateur user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour l'ID: " + userId));
+            // Validate that the user has SUPPORT role
+            boolean isSupport = user.getRoles().stream()
+                    .anyMatch(role -> role.getName().equals("SUPPORT"));
+
+            boolean isAdmin = user.getRoles().stream()
+                    .anyMatch(role -> role.getName().equals("ADMIN"));
+            if (!isSupport && !isAdmin) {
+                throw new IllegalArgumentException("L'utilisateur doit avoir le rôle SUPPORT pour être assigné");
+            }
+        }
+        demande.setAssignedTo(user);
+        demande = demandeRepository.save(demande);
+        return DemandeDTO.builder()
+                .id(demande.getId())
+                .commentaire(demande.getCommentaire())
+                .statut(demande.getStatut().name())
+                .dateSoumission(demande.getDateSoumission())
+                .utilisateurId(demande.getUtilisateur().getId())
+                .utilisateurNom(demande.getUtilisateur().fullname())
+                .utilisateurEmail(demande.getUtilisateur().getEmail())
+                .serviceId(demande.getService().getId())
+                .serviceNom(demande.getService().getNom())
+                .documentsJustificatifs(demande.getDocumentsJustificatifs() != null
+                        ? demande.getDocumentsJustificatifs().stream()
+                                .map(doc -> DocumentJustificatifDto.builder()
+                                        .id(doc.getId())
+                                        .fileName(doc.getFileName())
+                                        .contentType(doc.getContentType())
+                                        .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
+                                        .build())
+                                .toList()
+                        : List.of())
+                .documentReponse(demande.getDocumentReponse() != null
+                        ? DocumentJustificatifDto.builder()
+                                .id(demande.getDocumentReponse().getId())
+                                .fileName(demande.getDocumentReponse().getFileName())
+                                .contentType(demande.getDocumentReponse().getContentType())
+                                .uploadedAt(demande.getDocumentReponse().getUploadedAt() != null
+                                        ? demande.getDocumentReponse().getUploadedAt()
+                                        : null)
+                                .build()
+                        : null)
+                .assignedToId(demande.getAssignedTo() != null ? demande.getAssignedTo().getId() : null)
+                .assignedToUsername(demande.getAssignedTo() != null ? demande.getAssignedTo().fullname() : null)
+                .build();
     }
 
     private Map<String, Object> extractServiceSpecificData(ServiceEntity service) {

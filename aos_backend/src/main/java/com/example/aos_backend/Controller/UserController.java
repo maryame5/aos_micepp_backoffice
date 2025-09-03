@@ -37,7 +37,9 @@ public class UserController {
             return utilisateurRepository.findById(id)
                     .map(user -> UserDTO.builder()
                             .id(user.getId())
-                            .username(user.getFirstname() + " " + user.getLastname())
+                            .firstname(user.getFirstname())
+                            .lastname(user.getLastname())
+
                             .email(user.getEmail())
                             .role(user.getRoles().isEmpty() ? "N/A" : user.getRoles().get(0).getName())
                             .usingTemporaryPassword(user.isUsingTemporaryPassword())
@@ -70,7 +72,8 @@ public class UserController {
 
                         UserDTO updatedDTO = UserDTO.builder()
                                 .id(savedUser.getId())
-                                .username(savedUser.getFirstname() + " " + savedUser.getLastname())
+                                .firstname(savedUser.getFirstname())
+                                .lastname(savedUser.getLastname())
                                 .email(savedUser.getEmail())
                                 .role(savedUser.getRoles().isEmpty() ? "N/A" : savedUser.getRoles().get(0).getName())
                                 .usingTemporaryPassword(savedUser.isUsingTemporaryPassword())

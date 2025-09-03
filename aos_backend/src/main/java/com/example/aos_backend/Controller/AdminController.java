@@ -23,7 +23,7 @@ public class AdminController {
 
     private final UserManagementService userManagementService;
 
-    @PostMapping("/register-user")
+    @PostMapping("users/register-user")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> registerUser(@RequestBody RegisterationRequest request) {
         try {

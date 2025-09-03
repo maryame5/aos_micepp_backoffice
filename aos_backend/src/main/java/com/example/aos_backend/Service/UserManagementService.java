@@ -72,18 +72,19 @@ public class UserManagementService {
         }
 
         // Send welcome email with temporary password
-        sendWelcomeEmail(request.getEmail(), request.getFirstname() + " " + request.getLastname(), temporaryPassword,
+        sendWelcomeEmail(request.getEmail(), request.getFirstName() + " " + request.getLastName(), temporaryPassword,
                 request.getRole());
     }
 
     private Utilisateur createUser(RegisterationRequest request, Role role, String temporaryPassword) {
         Utilisateur utilisateur = Utilisateur.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
+                .firstname(request.getFirstName())
+                .lastname(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(temporaryPassword))
                 .cin(request.getCin())
                 .phone(request.getPhone())
+                .Department(request.getDepartment())
                 .matricule(request.getMatricule())
                 .accountLocked(false)
                 .enabled(true)
@@ -160,10 +161,12 @@ public class UserManagementService {
 
         return users.stream().map(user -> UserDTO.builder()
                 .id(user.getId())
-                .username(user.getFirstname() + " " + user.getLastname())
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
                 .email(user.getEmail())
                 .role(user.getRoles().isEmpty() ? "N/A" : user.getRoles().get(0).getName())
                 .usingTemporaryPassword(user.isUsingTemporaryPassword())
+                .department(user.getDepartment())
                 .phone(user.getPhone())
                 .cin(user.getCin())
                 .matricule(user.getMatricule())

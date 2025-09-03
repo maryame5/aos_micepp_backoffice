@@ -29,11 +29,11 @@ public class DocumentPublic {
     @ManyToOne
     @JoinColumn(name = "published_by_admin_id")
     private Admin publishedBy;
-    
+
     @ManyToOne
     @JoinColumn(name = "published_by_support_id")
     private Support publishedBySupport;
-    
+
     @CreatedDate
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;

@@ -13,7 +13,7 @@ import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { DashboardService } from '../../../services/dashboard.service';
 import { ServiceRequest } from '../../../models/request.model';
-import { User, UserRole } from '../../../models/user.model';
+import { User, UserDTO, UserRole } from '../../../models/user.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -117,7 +117,7 @@ import { User, UserRole } from '../../../models/user.model';
                         </mat-chip>
                         <span class="request-date">{{ request.createdAt | date:'dd/MM/yyyy' }}</span>
                         <span class="request-user" *ngIf="getRequestUser(request.userId)">
-                          Par: {{ getRequestUser(request.userId)?.firstName }} {{ getRequestUser(request.userId)?.lastName }}
+                          Par: {{ getRequestUser(request.userId)?.firstname }} {{ getRequestUser(request.userId)?.lastname }}
                           ({{ getRoleLabel(getRequestUser(request.userId)?.role) }})
                         </span>
                       </div>
@@ -500,7 +500,7 @@ import { User, UserRole } from '../../../models/user.model';
 export class AdminDashboardComponent implements OnInit {
   currentUser: User | null = null;
   recentRequests: ServiceRequest[] = [];
-  allUsers: User[] = [];
+  allUsers: UserDTO[] = [];
   isLoading = true;
   
   // Dashboard stats
@@ -630,8 +630,8 @@ export class AdminDashboardComponent implements OnInit {
     return labels[role || ''] || role || 'Utilisateur';
   }
 
-  getRequestUser(userId: string): User | undefined {
-    return this.allUsers.find(user => user.id === userId);
+  getRequestUser(userId: string): UserDTO |undefined  {
+    return this.allUsers.find(user => user.id === +userId);
   }
 
   getStatusLabel(status: string): string {

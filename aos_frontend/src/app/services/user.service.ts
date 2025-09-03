@@ -12,6 +12,7 @@ export interface RegisterUserRequest {
   cin: string;
   matricule: string;
   role: string;
+  department: String;
 }
 
 @Injectable({
@@ -38,22 +39,25 @@ export class UserService {
   /**
    * Get all users
    */
-  getAllUsers(): Observable<User[]> {
-    return this.http.get<UserDTO[]>(this.apiUrl).pipe(
-      map(users => users.map(user => ({
-        id: user.id.toString(),
-        email: user.email,
-        firstName: user.username.split(' ')[0] || '',
-        lastName: user.username.split(' ')[1] || '',
-        role: `ROLE_${user.role}` as UserRole,
-        isActive: !user.usingTemporaryPassword,
-        phoneNumber: user.phone,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      } as User))),
-      catchError(this.handleError)
-    );
-  }
+  getAllUsers(): Observable<UserDTO[]> {
+  
+  return this.http.get<UserDTO[]>(this.apiUrl).pipe(
+    map(users => users.map(user => ({
+      id: user.id,
+      firstName: user.firstname ,
+      lastName: user.lastname ,
+      department:user.department,
+      email: user.email,
+      user:user,
+      role: user.role,
+      usingTemporaryPassword: user.usingTemporaryPassword,
+      phone: user.phone,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    } as unknown as UserDTO))),
+    catchError(this.handleError)
+  );
+}
 
   /**
    * Get user by ID
@@ -80,17 +84,39 @@ export class UserService {
   getUsersByRole(role: string): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/role/${role}`)
       .pipe(
-        catchError(this.handleError)
+        map(users => users.map(user => ({
+          id: user.id,
+          firstname: user.firstName || '',
+          lastname: user.lastName || '',
+          email: user.email,
+          role: `ROLE_${user.role}` as string,
+          phone: user.phone,
+        
+          createdAt: new Date(),
+          updatedAt: new Date()
+        } as unknown as User))),
+      catchError(this.handleError)
       );
   }
 
   /**
    * Get recent users (last 30 days)
    */
-  getRecentUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/recent`)
+  getRecentUsers(): Observable<UserDTO[]> {
+    return this.http.get<UserDTO[]>(`${this.apiUrl}/recent`)
       .pipe(
-        catchError(this.handleError)
+        map(users => users.map(user => ({
+          id: user.id,
+          firstname: user.firstname || '',
+          lastName: user.lastname || '',
+          email: user.email,
+          role: `ROLE_${user.role}` as string,
+          phone: user.phone,
+
+          createdAt: new Date(),
+          updatedAt: new Date()
+        } as unknown as UserDTO))),
+      catchError(this.handleError)
       );
   }
 

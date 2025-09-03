@@ -47,6 +47,10 @@ public class Utilisateur implements UserDetails, Principal {
     @Column(name = "cin", unique = true)
     private String cin;
 
+    @Column(name = "Department")
+
+    private String Department;
+
     private String password;
     @Builder.Default
     private boolean accountLocked = false;

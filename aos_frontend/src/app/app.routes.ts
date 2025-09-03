@@ -67,6 +67,11 @@ export const routes: Routes = [
         path: 'requests',
         loadComponent: () => import('./pages/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent)
       },
+
+      {
+        path: 'requests/:id',
+        loadComponent: () => import('./pages/admin/requests/request-detail/request-detail.component').then(m => m.AdminRequestDetailComponent)
+      },
       {
         path: 'complaints',
         loadComponent: () => import('./pages/admin/complaints/admin-complaints.component').then(m => m.AdminComplaintsComponent)

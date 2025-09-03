@@ -54,7 +54,7 @@ import { UserRole } from '../../../../models/user.model';
           <mat-card-content>
             <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
               <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
+                <mat-form-field >
                   <mat-label>Prénom</mat-label>
                   <input matInput formControlName="firstName" placeholder="Prénom de l'utilisateur">
                   <mat-error *ngIf="userForm.get('firstName')?.hasError('required')">
@@ -62,7 +62,14 @@ import { UserRole } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="form-field">
+                  <mat-form-field appearance="outline">
+                  <mat-label>Outline form field</mat-label>
+                  <input matInput placeholder="Placeholder">
+                  <mat-icon matSuffix>sentiment_very_satisfied</mat-icon>
+                  <mat-hint>Hint</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="fill" >
                   <mat-label>Nom de famille</mat-label>
                   <input matInput formControlName="lastName" placeholder="Nom de famille de l'utilisateur">
                   <mat-error *ngIf="userForm.get('lastName')?.hasError('required')">
@@ -72,7 +79,7 @@ import { UserRole } from '../../../../models/user.model';
               </div>
 
               <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
+                <mat-form-field appearance="outline" >
                   <mat-label>Email</mat-label>
                   <input matInput type="email" formControlName="email" placeholder="email@exemple.com">
                   <mat-error *ngIf="userForm.get('email')?.hasError('required')">
@@ -83,7 +90,7 @@ import { UserRole } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                                 <mat-form-field appearance="outline" class="form-field">
+                <mat-form-field appearance="fill" class="form-field">
                    <mat-label>Téléphone</mat-label>
                    <input matInput type="tel" formControlName="phoneNumber" placeholder="+212 6 12 34 56 78">
                    <mat-error *ngIf="userForm.get('phoneNumber')?.hasError('required')">
@@ -93,7 +100,7 @@ import { UserRole } from '../../../../models/user.model';
               </div>
 
               <div class="form-row">
-                <mat-form-field appearance="outline" class="form-field">
+                <mat-form-field  class="form-field">
                   <mat-label>CIN</mat-label>
                   <input matInput formControlName="cin" placeholder="Numéro de CIN">
                   <mat-error *ngIf="userForm.get('cin')?.hasError('required')">
@@ -108,9 +115,19 @@ import { UserRole } from '../../../../models/user.model';
                     Le matricule est requis
                   </mat-error>
                 </mat-form-field>
+
+
               </div>
 
               <div class="form-row">
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Département</mat-label>
+                <input matInput formControlName="department" placeholder="Département de l'utilisateur">
+                <mat-error *ngIf="userForm.get('department')?.hasError('required')">
+                  Le département est requis
+                </mat-error>
+              </mat-form-field>
                 <mat-form-field appearance="outline" class="form-field">
                   <mat-label>Rôle</mat-label>
                   <mat-select formControlName="role">
@@ -162,12 +179,15 @@ import { UserRole } from '../../../../models/user.model';
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 0.5rem; /* Reduced gap to minimize dividing line */
     }
 
     .form-field {
       width: 100%;
+      box-sizing: border-box; 
     }
+
+    
 
     .form-actions {
       display: flex;
@@ -212,7 +232,9 @@ export class AddUserComponent implements OnInit {
       phoneNumber: ['', [Validators.required]],
       cin: ['', [Validators.required]],
       matricule: ['', [Validators.required]],
-      role: ['ROLE_AGENT', [Validators.required]]
+      role: ['ROLE_AGENT', [Validators.required]],
+      department: ['', [Validators.required]]
+
     });
   }
 

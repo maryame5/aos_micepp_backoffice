@@ -190,37 +190,7 @@ export class SidebarComponent implements OnInit {
       route: '/contact',
     },
 
-    // Agent menu items
-    {
-      label: 'Tableau de bord',
-      icon: 'dashboard',
-      route: '/agent/dashboard',
-      roles: [UserRole.AGENT]
-    },
-    {
-      label: 'Mes demandes',
-      icon: 'request_page',
-      route: '/agent/requests',
-      roles: [UserRole.AGENT]
-    },
-    {
-      label: 'Nouvelle demande',
-      icon: 'add_circle',
-      route: '/agent/new-request',
-      roles: [UserRole.AGENT]
-    },
-    {
-      label: 'Mes réclamations',
-      icon: 'report_problem',
-      route: '/agent/Reclamation',
-      roles: [UserRole.AGENT]
-    },
-    {
-      label: 'Documents',
-      icon: 'description',
-      route: '/agent/documents',
-      roles: [UserRole.AGENT]
-    },
+    
 
     // Admin/Support menu items
     {
@@ -285,13 +255,13 @@ export class SidebarComponent implements OnInit {
     return this.menuItems.filter(item => {
       if (!item.roles) return true;
       if (!this.currentUser) return false;
-      return item.roles.includes(this.currentUser.role);
+      return item.roles.includes(this.currentUser.role as UserRole);
     }).map(item => ({
       ...item,
       children: item.children?.filter(child => {
         if (!child.roles) return true;
         if (!this.currentUser) return false;
-        return child.roles.includes(this.currentUser.role);
+        return child.roles.includes(this.currentUser.role as UserRole);
       })
     }));
   }

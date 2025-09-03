@@ -31,4 +31,7 @@ public class DemandeDTO {
     private String serviceNom;
     private Long serviceId;
 
+    private Integer assignedToId;
+    private String assignedToUsername;
+
 }

@@ -26,8 +26,8 @@ import { UserDTO } from '../../../../models/user.model';
   template: `
     <div class="user-details-container">
       <app-page-header 
-        [title]="user?.username ? 'Détails de ' + user?.username : 'Détail de l\\'utilisateur'" 
-        subtitle='Consultez les informations de l´utilisateur'>
+        [title]="user?.lastname ? 'Détails de ' + user?.firstname : 'Détail de l\\'utilisateur'" 
+        subtitle='Consultez les informations de lutilisateur'>
         <div slot="actions">
           <button mat-stroked-button routerLink="/admin/users">
             <mat-icon>arrow_back</mat-icon>
@@ -47,7 +47,7 @@ import { UserDTO } from '../../../../models/user.model';
             <div class="info-grid">
               <div class="info-item">
                 <label>Nom d'utilisateur</label>
-                <span>{{ user.username }}</span>
+                <span>{{ user.lastname }} {{user.firstname}} </span>
               </div>
               <div class="info-item">
                 <label>Email</label>
@@ -68,6 +68,10 @@ import { UserDTO } from '../../../../models/user.model';
               <div class="info-item">
                 <label>Matricule</label>
                 <span>{{ user.matricule || 'Non spécifié' }}</span>
+              </div>
+              <div class="info-item">
+                <label>Departement</label>
+                <span>{{ user.department || 'Non spécifié' }}</span>
               </div>
             </div>
             <mat-divider class="section-divider"></mat-divider>

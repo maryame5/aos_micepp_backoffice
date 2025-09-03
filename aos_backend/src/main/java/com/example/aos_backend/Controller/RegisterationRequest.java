@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Builder
 @Setter
 @Getter
@@ -18,11 +17,11 @@ import lombok.Setter;
 public class RegisterationRequest {
     @NotEmpty(message = "First name is required")
     @NotBlank(message = "First name cannot be blank")
-    private String firstname;
+    private String firstName;
 
     @NotEmpty(message = "Last name is required")
     @NotBlank(message = "Last name cannot be blank")
-    private String lastname;
+    private String lastName;
 
     @NotEmpty(message = "Email is required")
     @NotBlank(message = "Email cannot be blank")
@@ -45,6 +44,6 @@ public class RegisterationRequest {
     @NotBlank(message = "Role cannot be blank")
     private String role; // e.g., "AGENT", "ADMIN", "SUPPORT"
 
-    
+    private String Department;
 
 }

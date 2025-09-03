@@ -1,4 +1,5 @@
 export interface User {
+  phone: String;
   id: string;
   email: string;
   firstName: string;
@@ -6,8 +7,7 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   lastLogin?: Date;
-  profilePicture?: string;
-  phoneNumber?: string;
+  
   address?: string;
   department?: string;
   createdAt: Date;
@@ -17,13 +17,17 @@ export interface User {
 export interface UserDTO {
   id: number;
   username: string;
+  firstname:String;
+  lastname:String
   email: string;
   role: string;
+  department:String;
   usingTemporaryPassword: boolean;
   phone: string;
   cin: string;
   matricule: string;
 }
+
 
 export enum UserRole {
   ADMIN = 'ROLE_ADMIN',

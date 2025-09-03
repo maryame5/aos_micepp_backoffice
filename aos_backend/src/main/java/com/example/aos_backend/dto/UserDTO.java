@@ -11,12 +11,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDTO {
     private Integer id;
-    private String username;
+    private String firstname;
+    private String lastname;
     private String email;
     private String role;
     private boolean usingTemporaryPassword;
     private String phone;
     private String cin;
     private String matricule;
+    private String department;
 
 }
