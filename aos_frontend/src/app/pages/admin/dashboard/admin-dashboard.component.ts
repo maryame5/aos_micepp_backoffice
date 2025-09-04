@@ -13,6 +13,7 @@ import { AuthService } from '../../../services/auth.service';
 import { UserService } from '../../../services/user.service';
 import { DashboardService } from '../../../services/dashboard.service';
 import { ServiceRequest } from '../../../models/request.model';
+import { Demande } from '../../../services/request.service';
 import { User, UserDTO, UserRole } from '../../../models/user.model';
 
 @Component({
@@ -109,16 +110,15 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
                 <div class="requests-list" *ngIf="recentRequests.length > 0; else noRequests">
                   <div class="request-item" *ngFor="let request of recentRequests">
                     <div class="request-info">
-                      <h4 class="request-title">{{ request.title }}</h4>
+                      <h4 class="request-title">{{ request.serviceNom }}</h4>
                       <p class="request-description">{{ request.description | slice:0:80 }}...</p>
                       <div class="request-meta">
-                        <mat-chip [class]="getStatusClass(request.status)">
-                          {{ getStatusLabel(request.status) }}
+                        <mat-chip [class]="getStatusClass(request.statut)">
+                          {{ getStatusLabel(request.statut) }}
                         </mat-chip>
-                        <span class="request-date">{{ request.createdAt | date:'dd/MM/yyyy' }}</span>
-                        <span class="request-user" *ngIf="getRequestUser(request.userId)">
-                          Par: {{ getRequestUser(request.userId)?.firstname }} {{ getRequestUser(request.userId)?.lastname }}
-                          ({{ getRoleLabel(getRequestUser(request.userId)?.role) }})
+                        <span class="request-date">{{ request.dateSoumission | date:'dd/MM/yyyy' }}</span>
+                        <span class="request-user">
+                          Par: {{ request.utilisateurNom }}
                         </span>
                       </div>
                     </div>
@@ -499,7 +499,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
 })
 export class AdminDashboardComponent implements OnInit {
   currentUser: User | null = null;
-  recentRequests: ServiceRequest[] = [];
+  recentRequests: Demande[] = [];
   allUsers: UserDTO[] = [];
   isLoading = true;
   
@@ -649,7 +649,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    return `status-${status.toLowerCase().replace('_', '-')}`;
+    return `status-${status}`;
   }
 
   isAdmin(): boolean {

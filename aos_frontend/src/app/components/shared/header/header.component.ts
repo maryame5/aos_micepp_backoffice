@@ -61,8 +61,7 @@ import { U } from '@angular/cdk/keycodes';
           
           <div class="user-info" [class.rtl]="isRTL()">
             <span class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
-            <span class="user-role">{{ getRoleLabel(currentUser.role) }}</span>
-          </div>
+             </div>
           <mat-icon>arrow_drop_down</mat-icon>
         </button>
         <mat-menu #userMenu="matMenu">

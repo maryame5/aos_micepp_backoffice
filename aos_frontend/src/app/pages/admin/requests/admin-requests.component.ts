@@ -28,7 +28,7 @@ interface Demande {
   id: number;
   dateSoumission: string;
   statut: string;
-  commentaire: string;
+  description: string;
   utilisateurId: number;
   utilisateurNom: string;
   utilisateurEmail: string;
@@ -528,7 +528,7 @@ export class AdminRequestsComponent implements OnInit {
   applyFilters(): void {
     this.filteredRequests = this.requests.filter(demande => {
       const matchesSearch = !this.searchTerm || 
-        demande.commentaire.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        demande.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         demande.serviceId.toString().includes(this.searchTerm.toLowerCase());
       
       const matchesStatus = !this.selectedStatus || demande.statut === this.selectedStatus;

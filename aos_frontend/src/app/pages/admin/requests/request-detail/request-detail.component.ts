@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { PageHeaderComponent } from '../../../../components/shared/page-header/page-header.component';
 import { LoadingComponent } from '../../../../components/shared/loading/loading.component';
 import { RequestService } from '../../../../services/request.service';
+import { AuthService } from '../../../../services/auth.service';
 
 interface DocumentJustificatif {
   id: number;
@@ -27,7 +28,7 @@ interface Demande {
   id: number;
   dateSoumission: string;
   statut: string;
-  commentaire: string;
+  description: string;
   documentReponse?: DocumentJustificatif;
   utilisateurId: number;
   utilisateurNom: string;
@@ -35,7 +36,9 @@ interface Demande {
   documentsJustificatifs: DocumentJustificatif[];
   serviceNom: string;
   serviceId: number;
-  comments?: { userName: string; createdAt: string; content: string }[]; // Assuming comments structure
+  assignedToId?: number | null;
+  assignedToUsername?: string | null;
+  commentaire?: string ;
 }
 
 @Component({
@@ -108,8 +111,8 @@ interface Demande {
               <mat-divider class="section-divider"></mat-divider>
 
               <div class="description-section">
-                <h4>Commentaire</h4>
-                <p>{{ request.commentaire }}</p>
+                <h4>Desciption</h4>
+                <p>{{ request.description }}</p>
               </div>
 
               <div class="service-data-section" *ngIf="serviceData">
@@ -161,7 +164,7 @@ interface Demande {
         </div>
 
         <!-- Admin Controls -->
-        <mat-card class="admin-controls-card">
+        <mat-card class="admin-controls-card" *ngIf="isAssignedToCurrentUser()">
           <mat-card-header>
             <mat-card-title>Gestion de la demande</mat-card-title>
           </mat-card-header>
@@ -195,18 +198,14 @@ interface Demande {
         </mat-card>
 
         <!-- Comments/History -->
-        <mat-card class="comments-card" *ngIf="request.comments && request.comments.length > 0">
+        <mat-card class="comments-card" *ngIf="request.commentaire && request.commentaire.trim().length > 0">
           <mat-card-header>
             <mat-card-title>Historique et commentaires</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <div class="comments-list">
-              <div class="comment-item" *ngFor="let comment of request.comments">
-                <div class="comment-header">
-                  <span class="comment-author">{{ comment.userName }}</span>
-                  <span class="comment-date">{{ comment.createdAt | date:'dd/MM/yyyy à HH:mm' }}</span>
-                </div>
-                <p class="comment-content">{{ comment.content }}</p>
+              <div class="comment-item">
+                <p class="comment-content">{{ request.commentaire }}</p>
               </div>
             </div>
           </mat-card-content>
@@ -424,6 +423,7 @@ export class AdminRequestDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private requestService: RequestService,
+    private authService: AuthService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -524,6 +524,13 @@ export class AdminRequestDetailComponent implements OnInit {
     }
   }
 
+  isAssignedToCurrentUser(): boolean {
+    if (!this.request || !this.request.assignedToId) return false;
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return false;
+    return parseInt(currentUser.id) === this.request.assignedToId;
+  }
+
   updateRequest(): void {
     if (!this.requestId || !this.request) return;
 
@@ -547,8 +554,8 @@ export class AdminRequestDetailComponent implements OnInit {
       this.requestService.addComment(this.requestId, this.newComment).subscribe({
         next: (comment) => {
           if (this.request) {
-            if (!this.request.comments) this.request.comments = [];
-            this.request.comments.push(comment);
+            if (!this.request.commentaire) this.request.commentaire = '';
+            this.request.commentaire += `\n${comment.content}`;
             this.newComment = '';
           }
         },

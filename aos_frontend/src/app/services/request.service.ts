@@ -11,15 +11,22 @@ interface DocumentJustificatif {
   uploadedAt: string;
 }
 
-interface Demande {
+export interface Demande {
   id: number;
   dateSoumission: string;
   statut: string;
-  commentaire: string;
+  description: string;
+
   utilisateurId: number;
   utilisateurNom: string;
   utilisateurEmail: string;
+
   documentsJustificatifs: DocumentJustificatif[];
+
+  commentaire:string;
+
+  documentResponse: DocumentJustificatif;
+
   serviceNom: string;
   serviceId: number;
 
@@ -119,7 +126,7 @@ export class RequestService {
     return this.http.get<number>(`${this.apiUrl}/count/pending`);
   }
 
-  getRecentRequests(limit: number = 5): Observable<ServiceRequest[]> {
-    return this.http.get<ServiceRequest[]>(`${this.apiUrl}/recent?limit=${limit}`);
+  getRecentRequests(limit: number = 5): Observable<Demande[]> {
+    return this.http.get<Demande[]>(`${this.apiUrl}/recent?limit=${limit}`);
   }
 }

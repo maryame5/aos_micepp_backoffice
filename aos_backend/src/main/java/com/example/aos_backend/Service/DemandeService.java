@@ -72,7 +72,7 @@ public class DemandeService {
         try {
             return demandes.stream().map(d -> DemandeDTO.builder()
                     .id(d.getId())
-                    .commentaire(d.getCommentaire())
+                    .description(d.getDescription())
                     .statut(d.getStatut().name())
                     .dateSoumission(d.getDateSoumission())
                     .utilisateurId(d.getUtilisateur().getId())
@@ -126,7 +126,7 @@ public class DemandeService {
         Demande d = demandeOpt.get();
         return DemandeDTO.builder()
                 .id(d.getId())
-                .commentaire(d.getCommentaire())
+                .description(d.getDescription())
                 .statut(d.getStatut().name())
                 .dateSoumission(d.getDateSoumission())
                 .utilisateurId(d.getUtilisateur().getId())
@@ -207,7 +207,7 @@ public class DemandeService {
         demande = demandeRepository.save(demande);
         return DemandeDTO.builder()
                 .id(demande.getId())
-                .commentaire(demande.getCommentaire())
+                .description(demande.getDescription())
                 .statut(demande.getStatut().name())
                 .dateSoumission(demande.getDateSoumission())
                 .utilisateurId(demande.getUtilisateur().getId())
