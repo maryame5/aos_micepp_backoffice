@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,16 +22,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.aos_backend.Service.DemandeService;
 import com.example.aos_backend.Util.DocumentUtil;
 import com.example.aos_backend.dto.DemandeDTO;
+import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.Demande;
 import com.example.aos_backend.user.DocumentJustificatif;
 import com.example.aos_backend.user.Utilisateur;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/demandes")
 @RequiredArgsConstructor
+@Slf4j
 public class DemandeController {
     // Inject the DemandeService
     private final DemandeService demandeService;
@@ -90,41 +95,41 @@ public class DemandeController {
 
     @GetMapping("/support-users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Map<String, Object>>> getAllSupportUsers() {
+    public List<UserDTO> getAllSupportUsers() {
         try {
-            List<Utilisateur> supportUsers = demandeService.getAllSupportUsers();
-            List<Map<String, Object>> result = supportUsers.stream()
-                    .map(user -> {
-                        Map<String, Object> userMap = new java.util.HashMap<>();
-                        userMap.put("id", user.getId());
-                        userMap.put("username", user.getUsername());
-                        userMap.put("email", user.getEmail());
-                        userMap.put("firstname", user.getFirstname());
-                        userMap.put("lastname", user.getLastname());
-                        userMap.put("role", "SUPPORT");
-                        return userMap;
-                    })
-                    .toList();
-            return ResponseEntity.ok(result);
+            List<UserDTO> supportUsers = demandeService.getAllSupportUsers();
+
+            return (supportUsers);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
         }
     }
 
-    @PatchMapping("/{id}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DemandeDTO> assignRequest(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+    @PatchMapping("/{id}/assign/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<DemandeDTO> assignRequest(@PathVariable Long id, @PathVariable Integer userId) {
+        log.info("Controller: assignRequest called - id: {}, userId: {}", id, userId);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("Controller: Authentication - {}", auth);
+        if (auth != null) {
+            log.info("Controller: Authorities - {}", auth.getAuthorities());
+        }
         try {
-            Integer userId = payload.get("userId");
+            log.info("Controller: Processing assign request");
             if (userId == null) {
+                log.warn("Controller: userId is null");
                 return ResponseEntity.badRequest().build();
             }
+            log.info("Controller: Calling demandeService.assignRequest");
             DemandeDTO updatedDemande = demandeService.assignRequest(id, userId);
+            log.info("Controller: Assign request successful");
             return ResponseEntity.ok(updatedDemande);
         } catch (IllegalArgumentException e) {
+            log.error("Controller: IllegalArgumentException - {}", e.getMessage());
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
+            log.error("Controller: Exception - {}", e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }

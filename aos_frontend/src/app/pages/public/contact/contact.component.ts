@@ -38,7 +38,7 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
             <mat-card-content>
               <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
                 <div class="form-row">
-                  <mat-form-field appearance="outline" class="half-width">
+                  <mat-form-field  class="half-width">
                     <mat-label>Nom</mat-label>
                     <input matInput formControlName="lastName" required>
                     <mat-error *ngIf="contactForm.get('lastName')?.hasError('required')">
@@ -46,7 +46,7 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
                     </mat-error>
                   </mat-form-field>
                   
-                  <mat-form-field appearance="outline" class="half-width">
+                  <mat-form-field  class="half-width">
                     <mat-label>Prénom</mat-label>
                     <input matInput formControlName="firstName" required>
                     <mat-error *ngIf="contactForm.get('firstName')?.hasError('required')">
@@ -55,7 +55,7 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
                   </mat-form-field>
                 </div>
 
-                <mat-form-field appearance="outline" class="full-width">
+                <mat-form-field  class="full-width">
                   <mat-label>Email</mat-label>
                   <input matInput type="email" formControlName="email" required>
                   <mat-icon matSuffix>email</mat-icon>
@@ -67,13 +67,13 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="full-width">
+                <mat-form-field  class="full-width">
                   <mat-label>Téléphone</mat-label>
                   <input matInput type="tel" formControlName="phone">
                   <mat-icon matSuffix>phone</mat-icon>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="full-width">
+                <mat-form-field  class="full-width">
                   <mat-label>Sujet</mat-label>
                   <mat-select formControlName="subject" required>
                     <mat-option value="information">Demande d'information</mat-option>
@@ -87,7 +87,7 @@ import { PageHeaderComponent } from '../../../components/shared/page-header/page
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="full-width">
+                <mat-form-field  class="full-width">
                   <mat-label>Message</mat-label>
                   <textarea matInput formControlName="message" rows="6" required></textarea>
                   <mat-error *ngIf="contactForm.get('message')?.hasError('required')">

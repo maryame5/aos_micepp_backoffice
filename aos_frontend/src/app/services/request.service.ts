@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RequestStatus, Service, ServiceRequest } from '../models/request.model';
-import { User } from '../models/user.model';
+import { User, UserDTO } from '../models/user.model';
 
 interface DocumentJustificatif {
   id: number;
@@ -35,7 +35,7 @@ export class RequestService {
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('aos_token');
     return new HttpHeaders({
-      'Authorization': token ? `Bearer ${token}` : ''
+       'Authorization': token ? `Bearer ${token}` : ''
     });
     }
 
@@ -53,19 +53,20 @@ export class RequestService {
     return this.http.get<any>(`${this.apiUrl}/${id}/service-data`);
   }
 
-  getSupportUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/support-users`, {
-      headers: new HttpHeaders({
-      Authorization: `Bearer ${localStorage.getItem('aos_token')}`
-    })
+  getSupportUsers(): Observable<UserDTO[]> {
+    return this.http.get<UserDTO[]>(`${this.apiUrl}/support-users`, {
+      headers: this.getAuthHeaders()
     });
   }
 
   assignRequest(id: number, userId: number): Observable<Demande> {
-    return this.http.patch<Demande>(`${this.apiUrl}/${id}/assign`, { userId }, {
-      headers: new HttpHeaders({
-      Authorization: `Bearer ${localStorage.getItem('aos_token')}`
-    })
+    console.log('Frontend: Sending assign request', { id, userId, url: `${this.apiUrl}/${id}/assign/${userId ?? 'null'}` });
+    const headers = this.getAuthHeaders();
+    console.log('Frontend: Headers', headers);
+    return this.http.patch<Demande>(`${this.apiUrl}/${id}/assign/${userId ?? 'null'}`,
+      {},
+       {
+      headers: headers
     });
   }
 
@@ -78,8 +79,7 @@ export class RequestService {
   }
 
   addComment(id: number, comment: string): Observable<any> {
-    // Assuming comment structure { content: string }
-    return this.http.post<any>(`${this.apiUrl}/${id}/comments`, { content: comment });
+      return this.http.post<any>(`${this.apiUrl}/${id}/comments`, { content: comment });
   }
 
   uploadResponseDocument(id: number, file: File): Observable<DocumentJustificatif> {

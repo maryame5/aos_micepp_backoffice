@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.example.aos_backend.Repository.*;
 import com.example.aos_backend.dto.DemandeDTO;
 import com.example.aos_backend.dto.DocumentJustificatifDto;
+import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.ActiviteCulturelleSportiveService;
 import com.example.aos_backend.user.AppuiScolaireService;
 import com.example.aos_backend.user.ColonieVacanceService;
@@ -173,10 +174,15 @@ public class DemandeService {
     }
 
     @Transactional
-    public List<Utilisateur> getAllSupportUsers() {
-        return supportRepository.findAll().stream()
-                .map(Support::getUtilisateur)
-                .toList();
+    public List<UserDTO> getAllSupportUsers() {
+        List<Support> supports = supportRepository.findAll();
+        return supports.stream().map(sup -> UserDTO.builder()
+                .id(sup.getId())
+                .firstname(sup.getUtilisateur().getFirstname())
+                .lastname(sup.getUtilisateur().getLastname())
+                .email(sup.getUtilisateur().getEmail())
+
+                .build()).toList();
     }
 
     @Transactional

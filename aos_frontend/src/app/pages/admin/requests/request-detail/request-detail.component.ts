@@ -167,7 +167,7 @@ interface Demande {
           </mat-card-header>
           <mat-card-content>
             <form (ngSubmit)="updateRequest()">
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field  class="full-width">
                 <mat-label>Nouveau statut</mat-label>
                 <mat-select [(ngModel)]="newStatus" name="newStatus">
                   <mat-option value="EN_ATTENTE">En attente</mat-option>
@@ -177,12 +177,12 @@ interface Demande {
                 </mat-select>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field class="full-width">
                 <mat-label>Ajouter un commentaire</mat-label>
                 <textarea matInput [(ngModel)]="newComment" name="newComment" rows="4"></textarea>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="full-width">
+              <mat-form-field  class="full-width">
                 <mat-label>Document de réponse</mat-label>
                 <input matInput type="file" (change)="onFileSelected($event)" #fileInput style="display: none;">
                 <button mat-raised-button (click)="fileInput.click()">Choisir fichier</button>

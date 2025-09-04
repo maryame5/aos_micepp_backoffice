@@ -15,7 +15,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth.service';
 import { RequestService } from '../../../services/request.service';
 import { MatTableModule } from '@angular/material/table';
-import { User } from '../../../models/user.model';
+import { User, UserDTO } from '../../../models/user.model';
 
 interface DocumentJustificatif {
   id: number;
@@ -69,13 +69,13 @@ interface Demande {
         <!-- Filters -->
         <mat-card class="filters-card">
           <div class="filters-container">
-            <mat-form-field appearance="outline">
+            <mat-form-field >
               <mat-label>Rechercher</mat-label>
               <input matInput [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Titre ou description...">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field >
               <mat-label>Statut</mat-label>
               <mat-select [(value)]="selectedStatus" (selectionChange)="applyFilters()">
                 <mat-option value="">Tous les statuts</mat-option>
@@ -156,15 +156,15 @@ interface Demande {
             <ng-container matColumnDef="assignedTo">
               <th mat-header-cell *matHeaderCellDef> Affecter à </th>
               <td mat-cell *matCellDef="let demande">
-                <mat-form-field appearance="outline" class="assign-select">
+                <mat-form-field  class="assign-select">
                   <mat-label>Affecter à</mat-label>
-                  <mat-select [value]="demande.assignedTo" (selectionChange)="assignRequest(demande.id, $event.value)">
+                  <mat-select [value]="demande.assignedTo.username" (selectionChange)="assignRequest(demande.id, $event.value)">
                     <mat-option [value]="null">Non affecté</mat-option>
-                    <mat-option [value]="{ id: currentUserId, username: 'Moi (Admin)', firstname: 'Admin', lastname: '' }">
-                      Moi (Admin)
+                    <mat-option [value]="currentUser">
+                      Moi (Admin) 
                     </mat-option>
                     <mat-option *ngFor="let user of supportUsers" [value]="user">
-                      {{ user.firstName }} {{ user.lastName }} (Support)
+                      {{ user.firstname }} {{ user.lastname }} (Support)
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
@@ -385,8 +385,9 @@ export class AdminRequestsComponent implements OnInit {
   searchTerm = '';
   selectedStatus = '';
   displayedColumns: string[] = ['id', 'utilisateurNom', 'serviceNom', 'dateSoumission', 'statut', 'assignedTo'];
-  supportUsers: User[] = [];
+  supportUsers: UserDTO[] = [];
   currentUserId: number | undefined;
+  currentUser: User | null = null;
 
   constructor(
     private requestService: RequestService,
@@ -396,6 +397,7 @@ export class AdminRequestsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.currentUser =this.authService.getCurrentUser()
     this.currentUserId = this.authService.getCurrentUser()?.id
       ? Number(this.authService.getCurrentUser()?.id)
       : undefined;
@@ -447,10 +449,11 @@ export class AdminRequestsComponent implements OnInit {
       next: (users) => {
         this.supportUsers = users.map(user => ({
           ...user,
-          firstname: user.firstName || '',
-          lastname: user.lastName || ''
+          firstname: user.firstname || '',
+          lastname: user.lastname || ''
         }));
         console.log('Support users loaded:', this.supportUsers);
+        
       },
       error: (error) => {
         console.error('Error loading support users:', error);
@@ -509,13 +512,17 @@ export class AdminRequestsComponent implements OnInit {
   }
 
   assignRequest(requestId: number, user: { id: number; username: string } | null): void {
+    console.log('Component: assignRequest called', { requestId, user });
     if (!user || user.id === undefined) {
+      console.log('Component: Invalid user selected');
       this.snackBar.open('Veuillez sélectionner un utilisateur valide', 'Fermer', { duration: 5000 });
       return;
     }
 
+    console.log('Component: Calling requestService.assignRequest');
     this.requestService.assignRequest(requestId, user.id).subscribe({
       next: (updatedRequest) => {
+        console.log('Component: Assign request successful', updatedRequest);
         const index = this.requests.findIndex(r => r.id === requestId);
         if (index !== -1) {
           this.requests[index].assignedTo = updatedRequest.assignedTo
@@ -526,7 +533,7 @@ export class AdminRequestsComponent implements OnInit {
         this.snackBar.open('Demande affectée avec succès', 'Fermer', { duration: 5000 });
       },
       error: (error) => {
-        console.error('Error assigning request:', error);
+        console.error('Component: Error assigning request:', error);
         this.snackBar.open('Erreur lors de l\'affectation', 'Fermer', { duration: 5000 });
       }
     });

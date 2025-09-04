@@ -32,11 +32,24 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         try {
+            System.out
+                    .println("JwtFilter: Processing request - " + request.getMethod() + " " + request.getRequestURI());
+
+            // Skip JWT processing for OPTIONS requests (CORS preflight)
+            if ("OPTIONS".equals(request.getMethod())) {
+                System.out.println("JwtFilter: Skipping OPTIONS request");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             final String authHeader = request.getHeader("Authorization");
             final String jwt;
             final String userEmail;
 
+            System.out.println("JwtFilter: Authorization header present: " + (authHeader != null));
+
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                System.out.println("JwtFilter: No valid Authorization header, continuing without authentication");
                 filterChain.doFilter(request, response);
                 return;
             }
