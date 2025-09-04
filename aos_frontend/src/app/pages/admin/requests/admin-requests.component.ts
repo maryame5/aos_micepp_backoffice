@@ -155,29 +155,29 @@ interface Demande {
             </ng-container>
 
          <ng-container matColumnDef="assignedTo">
-  <th mat-header-cell *matHeaderCellDef> Affecter à </th>
-  <td mat-cell *matCellDef="let demande">
-    <mat-form-field class="assign-select">
-      <mat-label>Affecter à</mat-label>
-      <mat-select 
-        [value]="demande.assignedToId ? demande.assignedToId.toString() : null" 
-        (selectionChange)="assignRequest(demande.id, $event.value)">
-        <mat-option [value]="null">Non affecté</mat-option>
-        <mat-option 
-          [value]="currentUserId?.toString()"
-          [class.assigned]="currentUserId?.toString() === demande.assignedToId?.toString()">
-          Moi (Admin)
-        </mat-option>
-        <mat-option 
-          *ngFor="let user of supportUsers" 
-          [value]="user.id.toString()" 
-          [class.assigned]="user.id.toString() === demande.assignedToId?.toString()">
-          {{ user.firstname }} {{ user.lastname }} (Support)
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </td>
-</ng-container>
+            <th mat-header-cell *matHeaderCellDef> Affecter à </th>
+            <td mat-cell *matCellDef="let demande">
+              <mat-form-field class="assign-select">
+                <mat-label>Affecter à</mat-label>
+                <mat-select 
+                  [value]="demande.assignedToId ? demande.assignedToId.toString() : null" 
+                  (selectionChange)="assignRequest(demande.id, $event.value)">
+                  <mat-option [value]="null">Non affecté</mat-option>
+                  <mat-option 
+                    [value]="currentUserId?.toString()"
+                    [class.assigned]="currentUserId?.toString() === demande.assignedToId?.toString()">
+                    Moi ({{ currentUser?.firstName }} {{ currentUser?.lastName }} - Admin)
+                  </mat-option>
+                  <mat-option 
+                    *ngFor="let user of supportUsers" 
+                    [value]="user.id.toString()" 
+                    [class.assigned]="user.id.toString() === demande.assignedToId?.toString()">
+                    {{ user.firstname }} {{ user.lastname }} (Support)
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </td>
+          </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -455,11 +455,21 @@ export class AdminRequestsComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUser =this.authService.getCurrentUser()
-    this.currentUserId = this.authService.getCurrentUser()?.id
-      ? Number(this.authService.getCurrentUser()?.id)
-      : undefined;
-    this.loadRequests();
-    this.loadSupportUsers();
+
+    const currentUserData = this.authService.getCurrentUser();
+      if (currentUserData?.id) {
+      
+        this.currentUserId = typeof currentUserData.id === 'number' 
+          ? currentUserData.id 
+          : Number(currentUserData.id);
+      }
+      
+      console.log('ngOnInit - currentUser:', this.currentUser);
+      console.log('ngOnInit - currentUserId:', this.currentUserId);
+
+
+      this.loadRequests();
+      this.loadSupportUsers();
   }
 
   loadRequests(): void {
@@ -569,6 +579,13 @@ export class AdminRequestsComponent implements OnInit {
 
   assignRequest(requestId: number, userIdStr: string | null): void {
     console.log('Component: assignRequest called', { requestId, userIdStr });
+
+    if (typeof userIdStr === 'object' && userIdStr !== null) {
+    console.error('Component: userIdStr is an object, should be string or null', userIdStr);
+    this.snackBar.open('Erreur: format d\'ID utilisateur invalide', 'Fermer', { duration: 5000 });
+    return;
+   }
+
     if (userIdStr === null) {
       console.log('Component: Assigning to null');
       this.requestService.assignRequest(requestId, null as any).subscribe({
@@ -617,8 +634,13 @@ export class AdminRequestsComponent implements OnInit {
         this.requests[index].assignedToUsername = updatedRequest.assignedToUsername;
         this.applyFilters();
         }
-        this.snackBar.open('Demande affectée avec succès', 'Fermer', { duration: 5000 });
-      },
+
+        const assignedUser = userId === this.currentUserId 
+        ? 'vous-même (Admin)' 
+        : this.supportUsers.find(u => u.id === userId)?.firstname + ' ' + this.supportUsers.find(u => u.id === userId)?.lastname;
+      
+      this.snackBar.open(`Demande affectée à ${assignedUser} avec succès`, 'Fermer', { duration: 5000 });
+       },
       error: (error) => {
         console.error('Component: Error assigning request:', error);
         this.snackBar.open('Erreur lors de l\'affectation', 'Fermer', { duration: 5000 });
