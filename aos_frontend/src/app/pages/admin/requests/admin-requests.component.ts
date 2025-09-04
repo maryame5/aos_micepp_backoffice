@@ -35,7 +35,8 @@ interface Demande {
   documentsJustificatifs: DocumentJustificatif[];
   serviceNom: string;
   serviceId: number;
-  assignedTo?: { id: number; username: string } | null;
+  assignedToId?: number | null;
+  assignedToUsername?: string | null;
 }
 
 @Component({
@@ -153,23 +154,30 @@ interface Demande {
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="assignedTo">
-              <th mat-header-cell *matHeaderCellDef> Affecter à </th>
-              <td mat-cell *matCellDef="let demande">
-                <mat-form-field  class="assign-select">
-                  <mat-label>Affecter à</mat-label>
-                  <mat-select [value]="demande.assignedTo.username" (selectionChange)="assignRequest(demande.id, $event.value)">
-                    <mat-option [value]="null">Non affecté</mat-option>
-                    <mat-option [value]="currentUser">
-                      Moi (Admin) 
-                    </mat-option>
-                    <mat-option *ngFor="let user of supportUsers" [value]="user">
-                      {{ user.firstname }} {{ user.lastname }} (Support)
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </td>
-            </ng-container>
+         <ng-container matColumnDef="assignedTo">
+  <th mat-header-cell *matHeaderCellDef> Affecter à </th>
+  <td mat-cell *matCellDef="let demande">
+    <mat-form-field class="assign-select">
+      <mat-label>Affecter à</mat-label>
+      <mat-select 
+        [value]="demande.assignedToId ? demande.assignedToId.toString() : null" 
+        (selectionChange)="assignRequest(demande.id, $event.value)">
+        <mat-option [value]="null">Non affecté</mat-option>
+        <mat-option 
+          [value]="currentUserId?.toString()"
+          [class.assigned]="currentUserId?.toString() === demande.assignedToId?.toString()">
+          Moi (Admin)
+        </mat-option>
+        <mat-option 
+          *ngFor="let user of supportUsers" 
+          [value]="user.id.toString()" 
+          [class.assigned]="user.id.toString() === demande.assignedToId?.toString()">
+          {{ user.firstname }} {{ user.lastname }} (Support)
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </td>
+</ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -324,6 +332,11 @@ interface Demande {
       color: #991b1b !important;
     }
 
+    .mat-option.assigned {
+      background-color: #e0f2fe !important;
+      color: #0277bd !important;
+    }
+
     .empty-state-card {
       border-radius: 12px;
       border: none;
@@ -371,6 +384,50 @@ interface Demande {
       .stats-grid {
         grid-template-columns: 1fr;
       }
+     
+    .mat-option.assigned {
+      background-color: #e3f2fd !important;
+      color: #1976d2 !important;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .mat-option.assigned::after {
+      content: '✓';
+      position: absolute;
+      right: 12px;
+      color: #4caf50;
+      font-weight: bold;
+    }
+
+    .mat-option.assigned:hover {
+      background-color: #bbdefb !important;
+    }
+
+    /* Style pour le dropdown quand une demande est assignée */
+    .assign-select .mat-select-value {
+      color: #1976d2;
+      font-weight: 500;
+    }
+
+    /* Indicateur visuel pour les demandes assignées dans le tableau */
+    .assigned-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #4caf50;
+      margin-right: 8px;
+    }
+
+    .unassigned-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #f44336;
+      margin-right: 8px;
+    }
 
       .assign-select {
         width: 150px;
@@ -420,10 +477,7 @@ export class AdminRequestsComponent implements OnInit {
     this.requestService.getRequests().subscribe({
       next: (demandes) => {
         console.log('Demandes loaded:', demandes);
-        this.requests = demandes.map(d => ({
-          ...d,
-          assignedTo: d.assignedTo ? { id: d.assignedTo.id, username: d.assignedTo.username } : null
-        }));
+        this.requests = demandes;
         this.applyFilters();
         this.isLoading = false;
       },
@@ -511,24 +565,57 @@ export class AdminRequestsComponent implements OnInit {
     return demande.statut === 'EN_ATTENTE';
   }
 
-  assignRequest(requestId: number, user: { id: number; username: string } | null): void {
-    console.log('Component: assignRequest called', { requestId, user });
-    if (!user || user.id === undefined) {
-      console.log('Component: Invalid user selected');
-      this.snackBar.open('Veuillez sélectionner un utilisateur valide', 'Fermer', { duration: 5000 });
+
+
+  assignRequest(requestId: number, userIdStr: string | null): void {
+    console.log('Component: assignRequest called', { requestId, userIdStr });
+    if (userIdStr === null) {
+      console.log('Component: Assigning to null');
+      this.requestService.assignRequest(requestId, null as any).subscribe({
+        next: (updatedRequest) => {
+          console.log('Component: Unassign request successful', updatedRequest);
+          const index = this.requests.findIndex(r => r.id === requestId);
+          if (index !== -1) {
+            this.requests[index].assignedToId = null;
+            this.requests[index].assignedToUsername=null;
+            this.applyFilters();
+          }
+          this.snackBar.open('Demande désaffectée avec succès', 'Fermer', { duration: 5000 });
+        },
+        error: (error) => {
+          console.error('Component: Error unassigning request:', error);
+          this.snackBar.open('Erreur lors de la désaffectation', 'Fermer', { duration: 5000 });
+        }
+      });
       return;
     }
 
-    console.log('Component: Calling requestService.assignRequest');
-    this.requestService.assignRequest(requestId, user.id).subscribe({
+    let userId: number;
+    if (userIdStr === this.currentUserId?.toString()) {
+      if (this.currentUserId == null || this.currentUserId == undefined) {
+        console.log('Component: Invalid admin ID');
+        this.snackBar.open('Impossible d\'assigner à l\'admin: ID invalide', 'Fermer', { duration: 5000 });
+        return;
+      }
+      userId = this.currentUserId;
+    } else {
+      userId = Number(userIdStr);
+      if (isNaN(userId)) {
+        console.log('Component: Invalid user ID string');
+        this.snackBar.open('ID utilisateur invalide', 'Fermer', { duration: 5000 });
+        return;
+      }
+    }
+
+    console.log('Component: Calling requestService.assignRequest with userId:', userId);
+    this.requestService.assignRequest(requestId, userId).subscribe({
       next: (updatedRequest) => {
         console.log('Component: Assign request successful', updatedRequest);
         const index = this.requests.findIndex(r => r.id === requestId);
         if (index !== -1) {
-          this.requests[index].assignedTo = updatedRequest.assignedTo
-            ? { id: updatedRequest.assignedTo.id, username: updatedRequest.assignedTo.username }
-            : null;
-          this.applyFilters();
+          this.requests[index].assignedToId = updatedRequest.assignedToId;
+        this.requests[index].assignedToUsername = updatedRequest.assignedToUsername;
+        this.applyFilters();
         }
         this.snackBar.open('Demande affectée avec succès', 'Fermer', { duration: 5000 });
       },

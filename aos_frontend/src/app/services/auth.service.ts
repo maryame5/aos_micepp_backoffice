@@ -23,6 +23,7 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<any>(`${this.API_URL}/login`, credentials).pipe(
       map(response => ({
+        id:response.userId,
         token: response.token,
         userType: response.userType as UserRole,
         email: response.email ,
@@ -103,6 +104,7 @@ export class AuthService {
   }
 
   getCurrentUser(): User | null {
+    console.log(this.currentUserSubject);
     return this.currentUserSubject.value;
   }
 

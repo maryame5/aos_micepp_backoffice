@@ -22,7 +22,11 @@ interface Demande {
   documentsJustificatifs: DocumentJustificatif[];
   serviceNom: string;
   serviceId: number;
-  assignedTo?: { id: number; username: string } | null;
+
+  assignedToId?: number | null;
+  assignedToUsername?: string | null;
+
+
 }
 
 
