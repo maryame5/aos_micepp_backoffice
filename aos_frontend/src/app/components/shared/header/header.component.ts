@@ -11,7 +11,7 @@ import { LanguageService } from '../../../services/language.service';
 import { User, UserRole } from '../../../models/user.model';
 import { Router } from '@angular/router';
 import { MatListModule } from "@angular/material/list";
-import { U } from '@angular/cdk/keycodes';
+import { ThemeService } from '../../../services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -54,6 +54,11 @@ import { U } from '@angular/cdk/keycodes';
         <!-- Notifications -->
         <button mat-icon-button class="notification-btn">
           <mat-icon matBadge="3" matBadgeColor="accent">notifications</mat-icon>
+        </button>
+
+        <!-- Dark Mode Toggle -->
+        <button mat-icon-button (click)="toggleDarkMode()" [attr.aria-label]="'Toggle dark mode'" class="dark-mode-toggle-btn">
+          <mat-icon>{{ themeService.isDarkMode() ? 'dark_mode' : 'light_mode' }}</mat-icon>
         </button>
 
         <!-- User Menu -->
@@ -151,6 +156,10 @@ import { U } from '@angular/cdk/keycodes';
       color: #dc2626 !important;
     }
 
+    .dark-mode-toggle-btn {
+      color: #6b7280;
+    }
+
     @media (max-width: 768px) {
       .header-title span {
         display: none;
@@ -171,18 +180,19 @@ export class HeaderComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private languageService: LanguageService,
-    private router: Router
+    private router: Router,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-     
-
     });
   }
 
- 
+  toggleDarkMode(): void {
+    this.themeService.toggleDarkMode();
+  }
 
   getCurrentLanguageFlag(): string {
     const currentLang = this.languageService.getCurrentLanguage();

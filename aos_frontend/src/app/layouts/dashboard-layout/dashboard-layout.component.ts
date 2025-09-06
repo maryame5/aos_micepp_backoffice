@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, RouterModule } from '@angular/router';
 import { HeaderComponent } from '../../components/shared/header/header.component';
 import { SidebarComponent } from '../../components/shared/sidebar/sidebar.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -16,6 +16,7 @@ import { User, UserRole } from '../../models/user.model';
   imports: [
     CommonModule,
     RouterOutlet,
+    RouterModule,
     HeaderComponent,
     MatSidenavModule,
     MatIconModule,
