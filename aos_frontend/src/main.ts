@@ -15,7 +15,7 @@ import { AuthInterceptor } from './app/interceptors/auth.interceptor';
 
 // Translation loader factory
 export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+  return new TranslateHttpLoader(http, '/assets/i18n/', '.json');
 }
 
 console.log('Starting Angular application...');

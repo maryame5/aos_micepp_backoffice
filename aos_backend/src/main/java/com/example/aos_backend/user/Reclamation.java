@@ -23,6 +23,7 @@ public class Reclamation {
     private Long id;
 
     private String objet;
+
     private String contenu;
 
     @Enumerated(EnumType.STRING)
@@ -36,11 +37,15 @@ public class Reclamation {
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private Utilisateur utilisateur;
 
+    @ManyToOne
+    @JoinColumn(name = "assigned_to_id")
+    private Utilisateur assignedTo;
+
+    @Column(name = "commentaire")
+    private String commentaire;
+
     @LastModifiedDate
     @Column(name = "updated_date", insertable = false)
     private LocalDateTime lastModifiedDate;
-}
 
-enum StatutReclamation {
-    EN_ATTENTE, AFFECTEE, EN_COURS, CLOTUREE
 }

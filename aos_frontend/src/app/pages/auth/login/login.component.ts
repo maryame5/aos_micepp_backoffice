@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthService } from '../../../services/auth.service';
 import { LanguageService } from '../../../services/language.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslateModule],
   template: `
     <div class="login-container">
       <div class="login-background"></div>
@@ -20,7 +21,7 @@ import { LanguageService } from '../../../services/language.service';
               <div class="logo-icon">🏢</div>
               <h1>AOS MICEPP</h1>
             </div>
-            <p class="login-subtitle">{{ getText('auth.loginSubtitle') || 'Connectez-vous à votre espace' }}</p>
+            <p class="login-subtitle">{{ 'auth.loginSubtitle' | translate }}</p>
           </div>
 
           <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
