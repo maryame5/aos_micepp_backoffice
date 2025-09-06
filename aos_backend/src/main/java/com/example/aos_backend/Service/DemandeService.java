@@ -1,5 +1,6 @@
 package com.example.aos_backend.Service;
 
+import java.net.http.HttpResponse.ResponseInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,10 +9,13 @@ import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aos_backend.Repository.*;
+import com.example.aos_backend.Util.DocumentUtil;
 import com.example.aos_backend.dto.DemandeDTO;
 import com.example.aos_backend.dto.DocumentJustificatifDto;
+import com.example.aos_backend.dto.UpdateDemandeRequest;
 import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.ActiviteCulturelleSportiveService;
 import com.example.aos_backend.user.AppuiScolaireService;
@@ -38,6 +42,7 @@ public class DemandeService {
     private final UtilisateurRepository userRepository;
     private final ServiceRepository serviceRepository;
     private final SupportRepository supportRepository;
+    private final StorageRepository storageRepository;
 
     @Transactional
     public List<DemandeDTO> getAllDemandes() {
@@ -73,6 +78,7 @@ public class DemandeService {
             return demandes.stream().map(d -> DemandeDTO.builder()
                     .id(d.getId())
                     .description(d.getDescription())
+                    .commentaire(d.getCommentaire())
                     .statut(d.getStatut().name())
                     .dateSoumission(d.getDateSoumission())
                     .utilisateurId(d.getUtilisateur().getId())
@@ -86,6 +92,7 @@ public class DemandeService {
                                             .id(doc.getId())
                                             .fileName(doc.getFileName())
                                             .contentType(doc.getContentType())
+                                            .type(doc.getType())
                                             .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
                                             .build())
                                     .toList()
@@ -95,6 +102,7 @@ public class DemandeService {
                                     .id(d.getDocumentReponse().getId())
                                     .fileName(d.getDocumentReponse().getFileName())
                                     .contentType(d.getDocumentReponse().getContentType())
+                                    .type(d.getDocumentReponse().getType())
                                     .uploadedAt(d.getDocumentReponse().getUploadedAt() != null
                                             ? d.getDocumentReponse().getUploadedAt()
                                             : null)
@@ -128,6 +136,7 @@ public class DemandeService {
                 .id(d.getId())
                 .description(d.getDescription())
                 .statut(d.getStatut().name())
+                .commentaire(d.getCommentaire())
                 .dateSoumission(d.getDateSoumission())
                 .utilisateurId(d.getUtilisateur().getId())
                 .utilisateurNom(d.getUtilisateur().fullname())
@@ -140,6 +149,7 @@ public class DemandeService {
                                         .id(doc.getId())
                                         .fileName(doc.getFileName())
                                         .contentType(doc.getContentType())
+                                        .type(doc.getType())
                                         .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
                                         .build())
                                 .toList()
@@ -149,6 +159,7 @@ public class DemandeService {
                                 .id(d.getDocumentReponse().getId())
                                 .fileName(d.getDocumentReponse().getFileName())
                                 .contentType(d.getDocumentReponse().getContentType())
+                                .type(d.getDocumentReponse().getType())
                                 .uploadedAt(d.getDocumentReponse().getUploadedAt() != null
                                         ? d.getDocumentReponse().getUploadedAt()
                                         : null)
@@ -210,6 +221,7 @@ public class DemandeService {
                 .description(demande.getDescription())
                 .statut(demande.getStatut().name())
                 .dateSoumission(demande.getDateSoumission())
+                .commentaire(demande.getCommentaire())
                 .utilisateurId(demande.getUtilisateur().getId())
                 .utilisateurNom(demande.getUtilisateur().fullname())
                 .utilisateurEmail(demande.getUtilisateur().getEmail())
@@ -221,6 +233,7 @@ public class DemandeService {
                                         .id(doc.getId())
                                         .fileName(doc.getFileName())
                                         .contentType(doc.getContentType())
+                                        .type(doc.getType())
                                         .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
                                         .build())
                                 .toList()
@@ -230,6 +243,7 @@ public class DemandeService {
                                 .id(demande.getDocumentReponse().getId())
                                 .fileName(demande.getDocumentReponse().getFileName())
                                 .contentType(demande.getDocumentReponse().getContentType())
+                                .type(demande.getDocumentReponse().getType())
                                 .uploadedAt(demande.getDocumentReponse().getUploadedAt() != null
                                         ? demande.getDocumentReponse().getUploadedAt()
                                         : null)
@@ -362,6 +376,114 @@ public class DemandeService {
         }
         if (data.containsKey("dateActivite")) {
             service.setDateActivite((String) data.get("dateActivite"));
+        }
+    }
+
+    @Transactional
+    public DemandeDTO updateDemande(Long id, UpdateDemandeRequest request, List<MultipartFile> files) {
+
+        log.info("Updating demande ID: {}", id);
+        log.info("Update request: {}", request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        Utilisateur currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'email: " + userEmail));
+
+        Demande demande = demandeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+        Utilisateur assigner = demande.getAssignedTo();
+
+        boolean isAdmin = currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("ADMIN"));
+        boolean isSupport = currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().equals("SUPPORT"));
+
+        if (isAdmin || (isSupport && assigner != null && currentUser.equals(assigner))) {
+            boolean hasUpdates = false;
+
+            if (request.getCommentaire() != null) {
+                demande.setCommentaire(request.getCommentaire());
+                hasUpdates = true;
+            }
+
+            if (request.getStatut() != null) {
+                StatutDemande newStatut;
+                try {
+                    newStatut = StatutDemande.valueOf(request.getStatut());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Statut invalide: " + request.getStatut());
+                }
+                demande.setStatut(newStatut);
+                hasUpdates = true;
+            }
+
+            if (files != null && !files.isEmpty()) {
+                for (MultipartFile file : files) {
+                    try {
+                        DocumentJustificatif document = new DocumentJustificatif();
+                        document.setFileName(file.getOriginalFilename());
+                        document.setContentType(file.getContentType());
+                        document.setContent(DocumentUtil.compressDocument(file.getBytes()));
+                        document.setUploadedAt(java.time.LocalDateTime.now());
+                        document.setType("reponse");
+                        document.setDemande(demande);
+                        demande.setDocumentReponse(document);
+
+                        storageRepository.save(document);
+                        hasUpdates = true;
+                    } catch (Exception e) {
+                        throw new RuntimeException(
+                                "Erreur lors du téléchargement du fichier: " + file.getOriginalFilename(), e);
+                    }
+                }
+            }
+
+            if (hasUpdates) {
+                log.info("Saving updates to demande ID: {}", id);
+                log.info("demande", demande);
+                demande = demandeRepository.save(demande);
+                log.info("demande enregistre", demande);
+            }
+
+            return DemandeDTO.builder()
+                    .id(demande.getId())
+                    .description(demande.getDescription())
+                    .statut(demande.getStatut().name())
+                    .commentaire(demande.getCommentaire())
+                    .dateSoumission(demande.getDateSoumission())
+                    .utilisateurId(demande.getUtilisateur().getId())
+                    .utilisateurNom(demande.getUtilisateur().fullname())
+                    .utilisateurEmail(demande.getUtilisateur().getEmail())
+                    .serviceId(demande.getService().getId())
+                    .serviceNom(demande.getService().getNom())
+                    .documentsJustificatifs(demande.getDocumentsJustificatifs() != null
+                            ? demande.getDocumentsJustificatifs().stream()
+                                    .map(doc -> DocumentJustificatifDto.builder()
+                                            .id(doc.getId())
+                                            .fileName(doc.getFileName())
+                                            .contentType(doc.getContentType())
+                                            .type(doc.getType())
+                                            .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
+                                            .build())
+                                    .toList()
+                            : List.of())
+                    .documentReponse(demande.getDocumentReponse() != null
+                            ? DocumentJustificatifDto.builder()
+                                    .id(demande.getDocumentReponse().getId())
+                                    .fileName(demande.getDocumentReponse().getFileName())
+                                    .contentType(demande.getDocumentReponse().getContentType())
+                                    .type(demande.getDocumentReponse().getType())
+                                    .uploadedAt(demande.getDocumentReponse().getUploadedAt() != null
+                                            ? demande.getDocumentReponse().getUploadedAt()
+                                            : null)
+                                    .build()
+                            : null)
+                    .assignedToId(demande.getAssignedTo() != null ? demande.getAssignedTo().getId() : null)
+                    .assignedToUsername(demande.getAssignedTo() != null ? demande.getAssignedTo().fullname() : null)
+                    .build();
+        } else {
+            throw new RuntimeException("Utilisateur non autorisé à mettre à jour cette demande");
         }
     }
 }

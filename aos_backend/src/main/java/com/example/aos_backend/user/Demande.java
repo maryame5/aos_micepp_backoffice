@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 @Data
 @Builder
@@ -39,10 +40,12 @@ public class Demande {
 
     @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonManagedReference
+    @SQLRestriction("type = 'justificatif'")
     private List<DocumentJustificatif> documentsJustificatifs;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "document_reponse_id")
+    @SQLRestriction("type = 'reponse'")
     @JsonManagedReference
     private DocumentJustificatif documentReponse;
 

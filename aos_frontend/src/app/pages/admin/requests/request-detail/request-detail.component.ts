@@ -38,7 +38,7 @@ interface Demande {
   serviceId: number;
   assignedToId?: number | null;
   assignedToUsername?: string | null;
-  commentaire?: string ;
+  commentaire?: string;
 }
 
 @Component({
@@ -111,8 +111,13 @@ interface Demande {
               <mat-divider class="section-divider"></mat-divider>
 
               <div class="description-section">
-                <h4>Desciption</h4>
+                <h4>Description</h4>
                 <p>{{ request.description }}</p>
+              </div>
+
+              <div class="comment-section" *ngIf="request.commentaire">
+                <h4>Commentaire de l'admin</h4>
+                <p>{{ request.commentaire }}</p>
               </div>
 
               <div class="service-data-section" *ngIf="serviceData">
@@ -132,13 +137,15 @@ interface Demande {
             <mat-card-content>
               <div class="documents-list">
                 <div class="document-item" *ngFor="let doc of request.documentsJustificatifs">
-                  <mat-icon>{{ getFileIcon(doc.fileName) }}</mat-icon>
-                  <div class="document-info">
-                    <span class="document-name">{{ doc.fileName }}</span>
-                  </div>
-                  <button mat-icon-button (click)="downloadDocument(doc.id, request.id, doc.fileName)">
-                    <mat-icon>download</mat-icon>
-                  </button>
+                  <ng-container *ngIf="doc.contentType !== 'justificatif'">
+                    <mat-icon>{{ getFileIcon(doc.fileName) }}</mat-icon>
+                    <div class="document-info">
+                      <span class="document-name">{{ doc.fileName }}</span>
+                    </div>
+                    <button mat-icon-button (click)="downloadDocument(doc.id, request.id, doc.fileName)">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                  </ng-container>
                 </div>
               </div>
             </mat-card-content>
@@ -161,7 +168,7 @@ interface Demande {
               </div>
             </mat-card-content>
           </mat-card>
-        </div>
+       </div>
 
         <!-- Admin Controls -->
         <mat-card class="admin-controls-card" *ngIf="isAssignedToCurrentUser()">
@@ -170,7 +177,7 @@ interface Demande {
           </mat-card-header>
           <mat-card-content>
             <form (ngSubmit)="updateRequest()">
-              <mat-form-field  class="full-width">
+              <mat-form-field class="full-width">
                 <mat-label>Nouveau statut</mat-label>
                 <mat-select [(ngModel)]="newStatus" name="newStatus">
                   <mat-option value="EN_ATTENTE">En attente</mat-option>
@@ -182,32 +189,33 @@ interface Demande {
 
               <mat-form-field class="full-width">
                 <mat-label>Ajouter un commentaire</mat-label>
-                <textarea matInput [(ngModel)]="newComment" name="newComment" rows="4"></textarea>
+                <textarea matInput [(ngModel)]="newComment" name="newComment" rows="4"  ></textarea>
               </mat-form-field>
 
-              <mat-form-field  class="full-width">
-                <mat-label>Document de réponse</mat-label>
-                <input matInput type="file" (change)="onFileSelected($event)" #fileInput style="display: none;">
-                <button mat-raised-button (click)="fileInput.click()">Choisir fichier</button>
-                <span *ngIf="selectedFile">{{ selectedFile.name }}</span>
+              <mat-form-field class="full-width">
+                <mat-label>Documents de réponse</mat-label>
+                <input matInput type="file" multiple (change)="onFileSelected($event)" #fileInput style="display: none;">
+                <button mat-raised-button (click)="fileInput.click()">Choisir fichiers</button>
+                <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} fichier(s) sélectionné(s)</span>
               </mat-form-field>
+
+              <div class="uploaded-files" *ngIf="selectedFiles.length > 0">
+                <h4>Fichiers sélectionnés ({{ selectedFiles.length }})</h4>
+                <div class="file-list">
+                  <div class="file-item" *ngFor="let file of selectedFiles; let i = index">
+                    <mat-icon>{{ getFileIcon(file.name) }}</mat-icon>
+                    <div class="file-info">
+                      <span class="file-name">{{ file.name }}</span>
+                    </div>
+                    <button mat-icon-button (click)="removeFile(i)" color="warn">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <button mat-raised-button color="primary" type="submit" [disabled]="isUpdating">Mettre à jour</button>
             </form>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Comments/History -->
-        <mat-card class="comments-card" *ngIf="request.commentaire && request.commentaire.trim().length > 0">
-          <mat-card-header>
-            <mat-card-title>Historique et commentaires</mat-card-title>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="comments-list">
-              <div class="comment-item">
-                <p class="comment-content">{{ request.commentaire }}</p>
-              </div>
-            </div>
           </mat-card-content>
         </mat-card>
       </div>
@@ -285,6 +293,18 @@ interface Demande {
       line-height: 1.6;
     }
 
+    .comment-section h4 {
+      margin: 0 0 1rem 0;
+      color: #374151;
+      font-size: 1rem;
+    }
+
+    .comment-section p {
+      margin: 0;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+
     .documents-list {
       display: flex;
       flex-direction: column;
@@ -311,39 +331,38 @@ interface Demande {
       color: #374151;
     }
 
-    .comments-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .comment-item {
-      padding: 1rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-    }
-
-    .comment-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .comment-author {
-      font-weight: 600;
+    .uploaded-files h4 {
+      margin: 0 0 1rem 0;
       color: #374151;
     }
 
-    .comment-date {
-      font-size: 0.875rem;
-      color: #6b7280;
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
-    .comment-content {
-      margin: 0;
-      color: #6b7280;
-      line-height: 1.6;
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+
+    .file-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .file-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
     }
 
     .full-width {
@@ -418,7 +437,7 @@ export class AdminRequestDetailComponent implements OnInit {
   requestId: number | null = null;
   newStatus: string = '';
   newComment: string = '';
-  selectedFile: File | null = null;
+  selectedFiles: File[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -441,6 +460,8 @@ export class AdminRequestDetailComponent implements OnInit {
         next: (request) => {
           this.request = request;
           this.newStatus = request.statut;
+          this.newComment = request.commentaire || '';
+          this.selectedFiles = [];
           this.isLoading = false;
           this.loadServiceData();
         },
@@ -520,8 +541,40 @@ export class AdminRequestDetailComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        if (!this.isValidFileType(file)) {
+          this.snackBar.open(`Type de fichier non supporté: ${file.name}`, 'Fermer', { duration: 3000 });
+          continue;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+          this.snackBar.open(`Fichier trop volumineux: ${file.name} (max 10MB)`, 'Fermer', { duration: 3000 });
+          continue;
+        }
+        if (this.selectedFiles.some(f => f.name === file.name)) {
+          this.snackBar.open(`Fichier déjà sélectionné: ${file.name}`, 'Fermer', { duration: 3000 });
+          continue;
+        }
+        this.selectedFiles.push(file);
+      }
     }
+  }
+
+  private isValidFileType(file: File): boolean {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'text/plain'
+    ];
+    return allowedTypes.includes(file.type);
+  }
+
+  removeFile(index: number): void {
+    this.selectedFiles.splice(index, 1);
   }
 
   isAssignedToCurrentUser(): boolean {
@@ -536,51 +589,22 @@ export class AdminRequestDetailComponent implements OnInit {
 
     this.isUpdating = true;
 
-    // Update status if changed
-    if (this.newStatus !== this.request.statut) {
-      this.requestService.updateRequestStatus(this.requestId, this.newStatus).subscribe({
-        next: () => {
-          if (this.request) this.request.statut = this.newStatus;
-        },
-        error: (error) => {
-          console.error('Error updating status:', error);
-          this.snackBar.open('Erreur lors de la mise à jour du statut', 'Fermer', { duration: 5000 });
-        }
-      });
-    }
-
-    // Add comment if provided
-    if (this.newComment) {
-      this.requestService.addComment(this.requestId, this.newComment).subscribe({
-        next: (comment) => {
-          if (this.request) {
-            if (!this.request.commentaire) this.request.commentaire = '';
-            this.request.commentaire += `\n${comment.content}`;
-            this.newComment = '';
-          }
-        },
-        error: (error) => {
-          console.error('Error adding comment:', error);
-          this.snackBar.open('Erreur lors de l\'ajout du commentaire', 'Fermer', { duration: 5000 });
-        }
-      });
-    }
-
-    // Upload response document if selected
-    if (this.selectedFile) {
-      this.requestService.uploadResponseDocument(this.requestId, this.selectedFile).subscribe({
-        next: (doc) => {
-          if (this.request) this.request.documentReponse = doc;
-          this.selectedFile = null;
-        },
-        error: (error) => {
-          console.error('Error uploading document:', error);
-          this.snackBar.open('Erreur lors du téléchargement du document', 'Fermer', { duration: 5000 });
-        }
-      });
-    }
-
-    this.isUpdating = false;
-    this.snackBar.open('Demande mise à jour avec succès', 'Fermer', { duration: 5000 });
+    const comment = this.newComment;
+    // Call the consolidated updateRequest method
+    this.requestService.updateRequest(this.requestId, this.newStatus, comment, this.selectedFiles).subscribe({
+      next: (updatedRequest) => {
+        this.request = updatedRequest;
+        this.newStatus = updatedRequest.statut;
+        this.newComment = updatedRequest.commentaire || '';
+        this.selectedFiles = [];
+        this.isUpdating = false;
+        this.snackBar.open('Demande mise à jour avec succès', 'Fermer', { duration: 5000 });
+      },
+      error: (error) => {
+        console.error('Error updating request:', error);
+        this.isUpdating = false;
+        this.snackBar.open('Erreur lors de la mise à jour de la demande', 'Fermer', { duration: 5000 });
+      }
+    });
   }
 }

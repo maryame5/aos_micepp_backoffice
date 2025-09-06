@@ -32,6 +32,9 @@ public class DocumentJustificatif {
     @Column(name = "uploaded_at")
     private LocalDateTime uploadedAt;
 
+    @Column(name = "type")
+    private String type;
+
     @ManyToOne
     @JoinColumn(name = "demande_id", nullable = false)
     @JsonBackReference

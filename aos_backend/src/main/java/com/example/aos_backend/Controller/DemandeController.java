@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aos_backend.Service.DemandeService;
 import com.example.aos_backend.Util.DocumentUtil;
 import com.example.aos_backend.dto.DemandeDTO;
+import com.example.aos_backend.dto.UpdateDemandeRequest;
 import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.Demande;
 import com.example.aos_backend.user.DocumentJustificatif;
@@ -173,6 +176,23 @@ public class DemandeController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
+
+    }
+
+    @PatchMapping(value = "/{id}/update", consumes = "multipart/form-data")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPPORT')")
+    public ResponseEntity<DemandeDTO> updateDemande(@PathVariable Long id,
+            @RequestPart UpdateDemandeRequest request,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        try {
+            DemandeDTO updatedDemande = demandeService.updateDemande(id, request, files);
+            return ResponseEntity.ok(updatedDemande);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 }

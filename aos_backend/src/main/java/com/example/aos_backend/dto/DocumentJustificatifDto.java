@@ -18,4 +18,5 @@ public class DocumentJustificatifDto {
     private String fileName;
     private String contentType;
     private LocalDateTime uploadedAt;
+    private String type;
 }

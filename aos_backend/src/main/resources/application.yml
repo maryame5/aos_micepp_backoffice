@@ -2,8 +2,10 @@ spring :
   profiles:
     active: dev
   servlet:
-    max-file-size : 50MB
-springdoc: 
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+springdoc:
   default-produces-media-typa : application/json
 
 

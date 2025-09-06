@@ -23,9 +23,9 @@ export interface Demande {
 
   documentsJustificatifs: DocumentJustificatif[];
 
-  commentaire:string;
+  documentResponse?: DocumentJustificatif;
 
-  documentResponse: DocumentJustificatif;
+  commentaire?: string;
 
   serviceNom: string;
   serviceId: number;
@@ -35,7 +35,6 @@ export interface Demande {
 
 
 }
-
 
 @Injectable({
   providedIn: 'root'
@@ -85,19 +84,7 @@ export class RequestService {
     return this.http.get(`${this.apiUrl}/${demandeId}/documents/${documentId}`, { responseType: 'blob' });
   }
 
-  updateRequestStatus(id: number, status: string): Observable<Demande> {
-    return this.http.patch<Demande>(`${this.apiUrl}/${id}/status`, { statut: status });
-  }
 
-  addComment(id: number, comment: string): Observable<any> {
-      return this.http.post<any>(`${this.apiUrl}/${id}/comments`, { content: comment });
-  }
-
-  uploadResponseDocument(id: number, file: File): Observable<DocumentJustificatif> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<DocumentJustificatif>(`${this.apiUrl}/${id}/response-document`, formData);
-  }
 
   getUserRequests(userId: string): Observable<ServiceRequest[]> {
     return this.http.get<ServiceRequest[]>(`${this.apiUrl}/user/${userId}`);
@@ -128,5 +115,24 @@ export class RequestService {
 
   getRecentRequests(limit: number = 5): Observable<Demande[]> {
     return this.http.get<Demande[]>(`${this.apiUrl}/recent?limit=${limit}`);
+  }
+
+  updateRequest(id: number, status: string, comment: string, files: File[]): Observable<Demande> {
+    const formData = new FormData();
+    // Append the UpdateDemandeRequest as a JSON string
+    const updateRequest = {
+      statut: status,
+      commentaire: comment
+    };
+    formData.append('request', new Blob([JSON.stringify(updateRequest)], { type: 'application/json' }));
+
+    // Append files if any
+    if (files && files.length > 0) {
+      files.forEach((file, index) => {
+        formData.append('files', file, file.name);
+      });
+    }
+
+    return this.http.patch<Demande>(`${this.apiUrl}/${id}/update`, formData, { headers: this.getAuthHeaders() });
   }
 }
