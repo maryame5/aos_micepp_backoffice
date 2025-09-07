@@ -76,6 +76,10 @@ export const routes: Routes = [
         path: 'complaints',
         loadComponent: () => import('./pages/admin/complaints/admin-complaints.component').then(m => m.AdminComplaintsComponent)
       },
+        {
+          path: 'contact',
+          loadComponent: () => import('./pages/public/contact/contact.component').then(c =>c.AdminMessagesComponent)
+         },
       {
         path: 'services',
         loadComponent: () => import('./pages/admin/services/admin-services.component').then(m => m.AdminServicesComponent),

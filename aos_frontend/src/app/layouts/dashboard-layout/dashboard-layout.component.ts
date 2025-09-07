@@ -64,6 +64,12 @@ import { User, UserRole } from '../../models/user.model';
                 <span matListItemTitle>Réclamations</span>
               </a>
 
+               <a mat-list-item routerLink="/admin/contact" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+                <mat-icon matListItemIcon>contact</mat-icon>
+                <span matListItemTitle>Messages de contact</span>
+              </a>
+
+
               <mat-divider></mat-divider>
 
               <!-- Services Management (Admin only) -->
@@ -194,7 +200,9 @@ export class DashboardLayoutComponent implements OnInit {
 
   isAdmin(): boolean {
     if (!this.currentUser) return false;
-    const userRole = this.currentUser.role.replace('ROLE_', '');
-    return userRole === UserRole.ADMIN ;
+    const userRole = this.currentUser.role;
+    console.log('User Role:', userRole);
+    console.log("userrole.admin", UserRole.ADMIN);
+    return userRole == UserRole.ADMIN ;
   }
 }

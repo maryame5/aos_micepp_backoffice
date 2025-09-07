@@ -19,18 +19,24 @@ import lombok.*;
 public class MessageContact {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
+    @Column(name = "nom")
     private String nom;
+
+    @Column(name = "prenom")
+    private String prenom;
+
     private String email;
+
     private String sujet;
-    private String contenu;
+    private String telephone;
+
+    private String message;
 
     @CreatedDate
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
 
-    @ManyToOne
-    @JoinColumn(name = "handled_by_id")
-    private Admin handledBy;
 }

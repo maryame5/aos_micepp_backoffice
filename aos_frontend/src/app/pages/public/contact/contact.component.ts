@@ -1,330 +1,497 @@
-import { Component } from '@angular/core';
+import { Component, Inject, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialogModule, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MessagesService, MessageContact } from '../../../services/messages.service';
 import { PageHeaderComponent } from '../../../components/shared/page-header/page-header.component';
 
+// Composant pour voir les détails du message
 @Component({
-  selector: 'app-contact',
+  selector: 'app-message-detail',
+  standalone: true,
+   imports: [CommonModule,
+     MatDialogModule, MatButtonModule, MatIconModule, MatChipsModule],
+
+  template: `
+    <div class="message-detail-dialog">
+      <h2 mat-dialog-title>Détails du message</h2>
+      <mat-dialog-content>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Nom complet:</label>
+            <span>{{ data.prenom }} {{ data.nom }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Email:</label>
+            <span>{{ data.email }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Téléphone:</label>
+            <span>{{ data.telephone || 'Non renseigné' }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Sujet:</label>
+            <mat-chip [color]="getSubjectColor(data.sujet)">{{ getSubjectLabel(data.sujet) }}</mat-chip>
+          </div>
+          <div class="detail-item">
+            <label>Date:</label>
+            <span>{{ formatDate(data.createdDate) }}</span>
+          </div>
+          <div class="detail-item full-width">
+            <label>Message:</label>
+            <div class="message-content">{{ getMessageText(data) }}</div>
+          </div>
+        </div>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="closeDialog()">Fermer</button>
+        <button mat-raised-button color="primary" (click)="replyToMessage()">
+          <mat-icon>reply</mat-icon>
+          Répondre
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .message-detail-dialog {
+      max-width: 600px;
+      width: 100%;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .detail-item.full-width {
+      grid-column: 1 / -1;
+    }
+    .detail-item label {
+      font-weight: 600;
+      color: #666;
+      font-size: 0.875rem;
+    }
+    .detail-item span {
+      font-size: 1rem;
+    }
+    .message-content {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+  `],
+ })
+export class MessageDetailComponent  {
+  
+  
+ constructor(
+    private dialogRef: MatDialogRef<MessageDetailComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+
+  }
+
+  closeDialog() {
+    this.dialogRef.close();
+  }
+
+  replyToMessage() {
+    const subject = encodeURIComponent(`Re: ${this.getSubjectLabel(this.data.sujet)}`);
+    const messageText = this.getMessageText(this.data);
+    const body = encodeURIComponent(`
+Bonjour ${this.data.prenom} ${this.data.nom},
+
+Merci pour votre message concernant "${this.getSubjectLabel(this.data.sujet)}".
+
+Message original:
+"${messageText}"
+
+Cordialement,
+L'équipe AOS-MICEPP
+    `);
+    
+    window.location.href = `mailto:${this.data.email}?subject=${subject}&body=${body}`;
+  }
+
+  getSubjectLabel(subject: string): string {
+    const labels: { [key: string]: string } = {
+      'information': 'Demande d\'information',
+      'support': 'Support technique',
+      'complaint': 'Réclamation',
+      'suggestion': 'Suggestion',
+      'other': 'Autre'
+    };
+    return labels[subject] || subject;
+  }
+
+  getSubjectColor(subject: string): string {
+    const colors: { [key: string]: string } = {
+      'information': 'primary',
+      'support': 'accent',
+      'complaint': 'warn',
+      'suggestion': 'primary',
+      'other': ''
+    };
+    return colors[subject] || '';
+  }
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleString('fr-FR');
+  }
+
+  // Helper method to get message text from either 'message' or 'Message' property
+  getMessageText(messageObj: any): string {
+    return messageObj?.message || messageObj?.Message || '';
+  }
+}
+
+@Component({
+  selector: 'app-admin-messages',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
+    MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
+    MatChipsModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
     PageHeaderComponent
   ],
   template: `
-    <div class="contact-page">
-      <app-page-header title="Contactez-nous" subtitle="Notre équipe est à votre disposition" [showActions]="false"></app-page-header>
+    <div class="messages-page">
+      <app-page-header 
+        title="Messages de Contact" 
+        subtitle="Gestion des messages reçus via le formulaire de contact"
+        [showActions]="false">
+      </app-page-header>
       
-      <div class="contact-content">
-        <div class="contact-grid">
-          <!-- Contact Form -->
-          <mat-card class="contact-form-card">
-            <mat-card-header>
-              <mat-card-title>Envoyez-nous un message</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
-                <div class="form-row">
-                  <mat-form-field  class="half-width">
-                    <mat-label>Nom</mat-label>
-                    <input matInput formControlName="lastName" required>
-                    <mat-error *ngIf="contactForm.get('lastName')?.hasError('required')">
-                      Le nom est requis
-                    </mat-error>
-                  </mat-form-field>
-                  
-                  <mat-form-field  class="half-width">
-                    <mat-label>Prénom</mat-label>
-                    <input matInput formControlName="firstName" required>
-                    <mat-error *ngIf="contactForm.get('firstName')?.hasError('required')">
-                      Le prénom est requis
-                    </mat-error>
-                  </mat-form-field>
-                </div>
+      <div class="messages-content">
+        <mat-card class="messages-card">
+          <mat-card-header>
+            <mat-card-title class="card-title">
+              <span>Liste des messages ({{ messages.length }})</span>
+              <button mat-icon-button (click)="loadMessages()" [disabled]="loading">
+                <mat-icon>refresh</mat-icon>
+              </button>
+            </mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div *ngIf="loading" class="loading-container">
+              <mat-spinner></mat-spinner>
+              <p>Chargement des messages...</p>
+            </div>
 
-                <mat-form-field  class="full-width">
-                  <mat-label>Email</mat-label>
-                  <input matInput type="email" formControlName="email" required>
-                  <mat-icon matSuffix>email</mat-icon>
-                  <mat-error *ngIf="contactForm.get('email')?.hasError('required')">
-                    L'email est requis
-                  </mat-error>
-                  <mat-error *ngIf="contactForm.get('email')?.hasError('email')">
-                    Format d'email invalide
-                  </mat-error>
-                </mat-form-field>
+            <div *ngIf="!loading && messages.length === 0" class="no-messages">
+              <mat-icon>inbox</mat-icon>
+              <h3>Aucun message</h3>
+              <p>Aucun message de contact n'a été reçu pour le moment.</p>
+            </div>
 
-                <mat-form-field  class="full-width">
-                  <mat-label>Téléphone</mat-label>
-                  <input matInput type="tel" formControlName="phone">
-                  <mat-icon matSuffix>phone</mat-icon>
-                </mat-form-field>
+            <div *ngIf="!loading && messages.length > 0" class="table-container">
+              <table mat-table [dataSource]="messages" class="messages-table">
+                
+                <!-- Date Column -->
+                <ng-container matColumnDef="date">
+                  <th mat-header-cell *matHeaderCellDef>Date</th>
+                  <td mat-cell *matCellDef="let message">
+                    {{ formatDate(message.createdDate) }}
+                  </td>
+                </ng-container>
 
-                <mat-form-field  class="full-width">
-                  <mat-label>Sujet</mat-label>
-                  <mat-select formControlName="subject" required>
-                    <mat-option value="information">Demande d'information</mat-option>
-                    <mat-option value="support">Support technique</mat-option>
-                    <mat-option value="complaint">Réclamation</mat-option>
-                    <mat-option value="suggestion">Suggestion</mat-option>
-                    <mat-option value="other">Autre</mat-option>
-                  </mat-select>
-                  <mat-error *ngIf="contactForm.get('subject')?.hasError('required')">
-                    Le sujet est requis
-                  </mat-error>
-                </mat-form-field>
+                <!-- Nom Column -->
+                <ng-container matColumnDef="nom">
+                  <th mat-header-cell *matHeaderCellDef>Nom</th>
+                  <td mat-cell *matCellDef="let message">
+                    {{ message.prenom }} {{ message.nom }}
+                  </td>
+                </ng-container>
 
-                <mat-form-field  class="full-width">
-                  <mat-label>Message</mat-label>
-                  <textarea matInput formControlName="message" rows="6" required></textarea>
-                  <mat-error *ngIf="contactForm.get('message')?.hasError('required')">
-                    Le message est requis
-                  </mat-error>
-                </mat-form-field>
+                <!-- Email Column -->
+                <ng-container matColumnDef="email">
+                  <th mat-header-cell *matHeaderCellDef>Email</th>
+                  <td mat-cell *matCellDef="let message">
+                    <a [href]="'mailto:' + message.email" class="email-link">
+                      {{ message.email }}
+                    </a>
+                  </td>
+                </ng-container>
 
-                <button 
-                  mat-raised-button 
-                  color="primary" 
-                  type="submit" 
-                  class="submit-btn"
-                  [disabled]="contactForm.invalid || isSubmitting">
-                  <mat-icon *ngIf="isSubmitting">hourglass_empty</mat-icon>
-                  <span>{{ isSubmitting ? 'Envoi en cours...' : 'Envoyer le message' }}</span>
-                </button>
-              </form>
-            </mat-card-content>
-          </mat-card>
+                <!-- Sujet Column -->
+                <ng-container matColumnDef="sujet">
+                  <th mat-header-cell *matHeaderCellDef>Sujet</th>
+                  <td mat-cell *matCellDef="let message">
+                    <mat-chip [color]="getSubjectColor(message.sujet)">
+                      {{ getSubjectLabel(message.sujet) }}
+                    </mat-chip>
+                  </td>
+                </ng-container>
 
-          <!-- Contact Info -->
-          <div class="contact-info-section">
-            <mat-card class="contact-info-card">
-              <mat-card-header>
-                <mat-card-title>Informations de contact</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="contact-item">
-                  <mat-icon>location_on</mat-icon>
-                  <div class="contact-details">
-                    <h4>Adresse</h4>
-                    <p>Avenue Mohammed V<br>Rabat, Maroc</p>
-                  </div>
-                </div>
+                <!-- Message Preview Column -->
+                <ng-container matColumnDef="message">
+                  <th mat-header-cell *matHeaderCellDef>Message</th>
+                  <td mat-cell *matCellDef="let message">
+                    <span class="message-preview">
+                      {{ getMessagePreview(message) }}
+                    </span>
+                  </td>
+                </ng-container>
 
-                <div class="contact-item">
-                  <mat-icon>phone</mat-icon>
-                  <div class="contact-details">
-                    <h4>Téléphone</h4>
-                    <p>+212 5XX XX XX XX</p>
-                  </div>
-                </div>
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>Actions</th>
+                  <td mat-cell *matCellDef="let message">
+                    <button 
+                      mat-icon-button 
+                      (click)="viewMessage(message)"
+                      matTooltip="Voir les détails">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                    <button 
+                      mat-icon-button 
+                      (click)="replyToMessage(message)"
+                      matTooltip="Répondre">
+                      <mat-icon>reply</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
 
-                <div class="contact-item">
-                  <mat-icon>email</mat-icon>
-                  <div class="contact-details">
-                    <h4>Email</h4>
-                    <p>contact aos-micepp.ma</p>
-                  </div>
-                </div>
-
-                <div class="contact-item">
-                  <mat-icon>schedule</mat-icon>
-                  <div class="contact-details">
-                    <h4>Horaires d'ouverture</h4>
-                    <p>Lundi - Vendredi: 8h00 - 17h00<br>
-                       Samedi: 8h00 - 12h00</p>
-                  </div>
-                </div>
-              </mat-card-content>
-            </mat-card>
-
-            <mat-card class="faq-card">
-              <mat-card-header>
-                <mat-card-title>Questions fréquentes</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="faq-item" *ngFor="let faq of faqs">
-                  <h4 class="faq-question">{{ faq.question }}</h4>
-                  <p class="faq-answer">{{ faq.answer }}</p>
-                </div>
-              </mat-card-content>
-            </mat-card>
-          </div>
-        </div>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+                    (click)="viewMessage(row)" 
+                    class="clickable-row">
+                </tr>
+              </table>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </div>
     </div>
   `,
   styles: [`
-    .contact-page {
+    .messages-page {
       padding: 1rem;
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 2rem;
-    }
-
-    .contact-form-card,
-    .contact-info-card,
-    .faq-card {
+    .messages-card {
       border-radius: 12px;
       border: none;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
     }
 
-    .contact-form {
+    .card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .loading-container {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    .full-width {
-      width: 100%;
-    }
-
-    .half-width {
-      width: 100%;
-    }
-
-    .submit-btn {
-      margin-top: 1rem;
-      padding: 0.75rem 2rem;
-      display: flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: flex-start;
       gap: 1rem;
-      margin-bottom: 2rem;
+      padding: 3rem;
     }
 
-    .contact-item mat-icon {
-      color: #3b82f6;
-      margin-top: 0.25rem;
+    .no-messages {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 3rem;
+      color: #666;
+      text-align: center;
     }
 
-    .contact-details h4 {
-      margin: 0 0 0.5rem 0;
-      font-weight: 600;
-      color: #1e293b;
+    .no-messages mat-icon {
+      font-size: 4rem;
+      width: 4rem;
+      height: 4rem;
+      opacity: 0.5;
     }
 
-    .contact-details p {
-      margin: 0;
-      color: #64748b;
-      line-height: 1.5;
+    .table-container {
+      overflow-x: auto;
     }
 
-    .faq-item {
-      margin-bottom: 1.5rem;
+    .messages-table {
+      width: 100%;
+      margin-top: 1rem;
     }
 
-    .faq-question {
-      margin: 0 0 0.5rem 0;
-      font-weight: 600;
-      color: #1e293b;
-      font-size: 0.875rem;
+    .clickable-row {
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .faq-answer {
-      margin: 0;
-      color: #64748b;
-      font-size: 0.875rem;
-      line-height: 1.5;
+    .clickable-row:hover {
+      background-color: #f5f5f5;
     }
 
-    @media (max-width: 1024px) {
-      .contact-grid {
-        grid-template-columns: 1fr;
-      }
+    .email-link {
+      color: #1976d2;
+      text-decoration: none;
+    }
+
+    .email-link:hover {
+      text-decoration: underline;
+    }
+
+    .message-preview {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
     }
 
     @media (max-width: 768px) {
-      .form-row {
-        grid-template-columns: 1fr;
+      .messages-page {
+        padding: 0.5rem;
       }
       
-      .contact-page {
-        padding: 0.5rem;
+      .message-preview {
+        max-width: 100px;
       }
     }
   `]
 })
-export class ContactComponent {
-  contactForm: FormGroup;
-  isSubmitting = false;
+export class AdminMessagesComponent implements OnInit {
+  messages: MessageContact[] = [];
+  loading = false;
+  displayedColumns: string[] = ['date', 'nom', 'email', 'sujet', 'message', 'actions'];
 
-  faqs = [
-    {
-      question: 'Comment créer un compte agent ?',
-      answer: 'Contactez votre administrateur RH pour obtenir vos identifiants de connexion.'
-    },
-    {
-      question: 'Combien de temps pour traiter une demande ?',
-      answer: 'Le délai moyen de traitement est de 5 à 10 jours ouvrables selon le type de demande.'
-    },
-    {
-      question: 'Comment suivre l\'état de ma demande ?',
-      answer: 'Connectez-vous à votre espace agent et consultez la section "Mes demandes".'
-    },
-    {
-      question: 'Que faire en cas de problème technique ?',
-      answer: 'Contactez notre support technique via ce formulaire en sélectionnant "Support technique".'
-    }
-  ];
+  private messagesService = inject(MessagesService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
-  constructor(
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {
-    this.contactForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phone: [''],
-      subject: ['', Validators.required],
-      message: ['', Validators.required]
+  ngOnInit() {
+    this.loadMessages();
+  }
+
+  loadMessages() {
+    this.loading = true;
+    
+    this.messagesService.getAllMessages().subscribe({
+      next: (response) => {
+        this.messages = response;
+        this.loading = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Erreur lors du chargement des messages:', error);
+        
+        let errorMessage = 'Erreur lors du chargement des messages.';
+        if (error.status === 401) {
+          errorMessage = 'Accès non autorisé. Veuillez vous reconnecter.';
+        } else if (error.status === 403) {
+          errorMessage = 'Accès interdit. Vous n\'avez pas les permissions nécessaires.';
+        } else if (error.status === 500) {
+          errorMessage = 'Erreur serveur. Veuillez réessayer plus tard.';
+        }
+        
+        this.snackBar.open(errorMessage, 'Fermer', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
     });
   }
 
-  onSubmit(): void {
-    if (this.contactForm.valid && !this.isSubmitting) {
-      this.isSubmitting = true;
+  viewMessage(message: MessageContact) {
+    const dialogRef = this.dialog.open(MessageDetailComponent, {
+      width: '600px',
+      data: message
+    });
+  }
 
-      // Simulate form submission
-      setTimeout(() => {
-        this.isSubmitting = false;
-        this.snackBar.open('Message envoyé avec succès! Nous vous répondrons dans les plus brefs délais.', 'Fermer', {
-          duration: 5000,
-          panelClass: ['success-snackbar']
-        });
-        this.contactForm.reset();
-      }, 2000);
+  replyToMessage(message: MessageContact) {
+    // Get the message text safely
+    const messageText = this.getMessageText(message);
+    
+    // Ouvrir l'application de messagerie par défaut
+    const subject = encodeURIComponent(`Re: ${this.getSubjectLabel(message.sujet)}`);
+    const body = encodeURIComponent(`
+Bonjour ${message.prenom} ${message.nom},
+
+Merci pour votre message concernant "${this.getSubjectLabel(message.sujet)}".
+
+Message original:
+"${messageText}"
+
+Cordialement,
+L'équipe AOS-MICEPP
+    `);
+    
+    window.location.href = `mailto:${message.email}?subject=${subject}&body=${body}`;
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  getSubjectLabel(subject: string): string {
+    const labels: { [key: string]: string } = {
+      'information': 'Demande d\'information',
+      'support': 'Support technique',
+      'complaint': 'Réclamation',
+      'suggestion': 'Suggestion',
+      'other': 'Autre'
+    };
+    return labels[subject] || subject;
+  }
+
+  getSubjectColor(subject: string): string {
+    const colors: { [key: string]: string } = {
+      'information': 'primary',
+      'support': 'accent',
+      'complaint': 'warn',
+      'suggestion': 'primary',
+      'other': ''
+    };
+    return colors[subject] || '';
+  }
+
+  // Helper method to safely get message text from either 'message' or 'Message' property
+  getMessageText(messageObj: any): string {
+    return messageObj?.message || messageObj?.Message || '';
+  }
+
+  // Fixed getMessagePreview method with proper null/undefined checking
+  getMessagePreview(messageObj: any): string {
+    const message = this.getMessageText(messageObj);
+    if (!message || typeof message !== 'string') {
+      return 'Aucun message';
     }
+    return message.length > 50 ? message.substring(0, 50) + '...' : message;
   }
 }

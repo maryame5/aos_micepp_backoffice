@@ -24,22 +24,16 @@ import lombok.experimental.SuperBuilder;
 @Table(name = "admin")
 public class Admin {
 
-   @Id
-   @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-   @OneToOne
+    @OneToOne
     @MapsId
     @JoinColumn(name = "id")
     private Utilisateur utilisateur;
-    
+
     @OneToMany(mappedBy = "publishedBy")
     private List<DocumentPublic> publishedDocuments;
-    
-	@OneToMany(mappedBy = "handledBy")
-    private List<MessageContact> handledMessages;
-
- 
-
 
 }
