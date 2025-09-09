@@ -110,22 +110,31 @@ export class ReclamationService {
       );
   }
 
-  // Méthodes supplémentaires que tu peux ajouter plus tard
-  updateComplaintStatus(complaintId: number, status: string): Observable<Reclamation> {
-    return this.http.patch<Reclamation>(`${this.apiUrl}/${complaintId}/status`, { status }, this.getHttpOptions())
+  // Récupérer les réclamations assignées à un utilisateur
+  getAssignedComplaints(userId: number): Observable<Reclamation[]> {
+    console.log('ReclamationService: Getting assigned complaints for user:', userId);
+    return this.http.get<Reclamation[]>(`${this.apiUrl}/assigned/${userId}`, this.getHttpOptions())
       .pipe(
         catchError(error => {
-          console.error('Error in updateComplaintStatus:', error);
+          console.error('Error in getAssignedComplaints:', error);
           return throwError(() => error);
         })
       );
   }
 
-  addComment(complaintId: number, comment: string): Observable<Reclamation> {
-    return this.http.patch<Reclamation>(`${this.apiUrl}/${complaintId}/comment`, { commentaire: comment }, this.getHttpOptions())
+
+
+  // Update complaint with both status and comment in a single request
+  updateComplaint(complaintId: number, status: string, comment: string): Observable<Reclamation> {
+    const updateRequest = {
+      statut: status,
+      commentaire: comment
+    };
+
+    return this.http.patch<Reclamation>(`${this.apiUrl}/${complaintId}/update`, updateRequest, this.getHttpOptions())
       .pipe(
         catchError(error => {
-          console.error('Error in addComment:', error);
+          console.error('Error in updateComplaint:', error);
           return throwError(() => error);
         })
       );

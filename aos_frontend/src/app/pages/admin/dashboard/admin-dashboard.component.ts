@@ -203,6 +203,11 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
                     Mes demandes
                   </button>
 
+                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/my-complaints">
+                    <mat-icon>support_agent</mat-icon>
+                    Mes réclamations
+                  </button>
+
                   <button mat-stroked-button class="quick-action-btn" routerLink="/admin/complaints">
                     <mat-icon>support_agent</mat-icon>
                     Réclamations
@@ -624,16 +629,20 @@ export class AdminDashboardComponent implements OnInit {
       }
     });
 
-    this.requestService.getAssignedRequests(5).subscribe({
-      next: (requests) => {
-        this.recentassignesRequest = requests;
-      },
-      error: (error) => {
-        console.error('Error loading recent assignées requests:', error);
-        this.recentRequests = [];
-      }
-
-    });
+    const currentUserId = this.currentUser?.id;
+    if (currentUserId) {
+      this.requestService.getAssignedRequests(+currentUserId).subscribe({
+        next: (requests) => {
+          this.recentassignesRequest = requests;
+        },
+        error: (error) => {
+          console.error('Error loading recent assignées requests:', error);
+          this.recentassignesRequest = [];
+        }
+      });
+    } else {
+      this.recentassignesRequest = [];
+    }
 
     // Load all users for request user info
     this.userService.getAllUsers().subscribe({

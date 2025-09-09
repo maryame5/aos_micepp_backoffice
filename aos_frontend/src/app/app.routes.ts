@@ -65,7 +65,9 @@ export const routes: Routes = [
       },
       {
         path: 'requests',
-        loadComponent: () => import('./pages/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent)
+        loadComponent: () => import('./pages/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
       },
 
       {
@@ -78,7 +80,19 @@ export const routes: Routes = [
       },
       {
         path: 'complaints',
-        loadComponent: () => import('./pages/admin/complaints/admin-complaints.component').then(m => m.AdminComplaintsComponent)
+        loadComponent: () => import('./pages/admin/complaints/admin-complaints.component').then(m => m.AdminComplaintsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
+      },
+      {
+        path: 'complaints/:id',
+        loadComponent: () => import('./pages/admin/complaints/complaint-detail/complaint-detail.component').then(m => m.AdminComplaintDetailComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
+      },
+      {
+        path: 'my-complaints',
+        loadComponent: () => import('./pages/admin/my-complaints/my-complaints.component').then(m => m.MyComplaintsComponent)
       },
         {
           path: 'contact',

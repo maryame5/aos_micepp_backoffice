@@ -85,6 +85,7 @@ public class Utilisateur implements UserDetails, Principal {
     private List<Reclamation> reclamations;
 
     @OneToMany(mappedBy = "publishedBy")
+    @JsonIgnore
     private List<DocumentPublic> publishedDocuments;
 
     @Override

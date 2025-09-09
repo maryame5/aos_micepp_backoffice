@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.aos_backend.Service.ReclamationService;
+import com.example.aos_backend.dto.UpdateRequest;
+
 import java.util.*;
 import com.example.aos_backend.user.Reclamation;
 import lombok.RequiredArgsConstructor;
@@ -81,6 +84,35 @@ public class ReclamationController {
             return ResponseEntity.ok(updatedReclamation);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/assigned/{userId}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPPORT')")
+    public ResponseEntity<List<Reclamation>> getReclamationsByAssignedUser(@PathVariable Integer userId) {
+        try {
+            List<Reclamation> reclamations = reclamationService.getReclamationsByAssignedUser(userId);
+            return ResponseEntity.ok(reclamations);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+
+    }
+
+    @PatchMapping("/{id}/update")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPPORT')")
+    public ResponseEntity<Reclamation> updateReclamation(@PathVariable Long id, @RequestBody UpdateRequest request) {
+        try {
+            Reclamation updatedReclamation = reclamationService.updateReclamationStatus(id, request);
+            return ResponseEntity.ok(updatedReclamation);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();

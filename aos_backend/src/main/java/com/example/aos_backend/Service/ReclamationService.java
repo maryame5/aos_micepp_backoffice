@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.aos_backend.Repository.ReclamationRepository;
 import com.example.aos_backend.Repository.UtilisateurRepository;
+import com.example.aos_backend.dto.UpdateRequest;
 import com.example.aos_backend.user.*;
 
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,35 @@ public class ReclamationService {
         }
         reclamation = reclamationRepository.save(reclamation);
 
+        return reclamation;
+    }
+
+    public List<Reclamation> getReclamationsByAssignedUser(Integer userId) {
+
+        Utilisateur user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour l'ID: " + userId));
+        return reclamationRepository.findByAssignedTo(user);
+    }
+
+    public Reclamation updateReclamationStatus(Long complaintId, UpdateRequest request) {
+        Reclamation reclamation = reclamationRepository.findById(complaintId)
+                .orElseThrow(() -> new RuntimeException("Reclamation not found with id: " + complaintId));
+
+        if (request.getStatut() != null) {
+            try {
+                StatutReclamation newStatus = StatutReclamation.valueOf(request.getStatut());
+                reclamation.setStatut(newStatus);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid status value: " + request.getStatut());
+            }
+        }
+
+        if (request.getCommentaire() != null) {
+            reclamation.setCommentaire(request.getCommentaire());
+        }
+
+        reclamation.setLastModifiedDate(java.time.LocalDateTime.now());
+        reclamation = reclamationRepository.save(reclamation);
         return reclamation;
     }
 
