@@ -98,7 +98,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
         <!-- Charts and Recent Activity -->
         <div class="dashboard-sections">
           <!-- Recent Requests -->
-          <div class="recent-section">
+          <div class="recent-section" *ngIf="isAdmin()">
             <mat-card>
               <mat-card-header>
                 <mat-card-title>Demandes récentes</mat-card-title>
@@ -109,6 +109,48 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
               <mat-card-content>
                 <div class="requests-list" *ngIf="recentRequests.length > 0; else noRequests">
                   <div class="request-item" *ngFor="let request of recentRequests">
+                    <div class="request-info">
+                      <h4 class="request-title">{{ request.serviceNom }}</h4>
+                      <p class="request-description">{{ request.description | slice:0:80 }}...</p>
+                      <div class="request-meta">
+                        <mat-chip [class]="getStatusClass(request.statut)">
+                          {{ getStatusLabel(request.statut) }}
+                        </mat-chip>
+                        <span class="request-date">{{ request.dateSoumission | date:'dd/MM/yyyy' }}</span>
+                        <span class="request-user">
+                          Par: {{ request.utilisateurNom }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="request-actions">
+                      <button mat-icon-button [routerLink]="['/admin/requests', request.id]">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <ng-template #noRequests>
+                  <div class="empty-state">
+                    <mat-icon class="empty-icon">assignment</mat-icon>
+                    <p>Aucune demande récente</p>
+                  </div>
+                </ng-template>
+              </mat-card-content>
+            </mat-card>
+          </div>
+
+          <!-- Recent Requests -->
+          <div class="recent-section" >
+            <mat-card>
+              <mat-card-header>
+                <mat-card-title>Demandes assignées</mat-card-title>
+                <div class="card-actions">
+                  <button mat-button routerLink="/admin/my-requests">Voir tout</button>
+                </div>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="requests-list" *ngIf="recentassignesRequest.length > 0; else noRequests">
+                  <div class="request-item" *ngFor="let request of recentassignesRequest">
                     <div class="request-info">
                       <h4 class="request-title">{{ request.serviceNom }}</h4>
                       <p class="request-description">{{ request.description | slice:0:80 }}...</p>
@@ -151,10 +193,16 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
                     <mat-icon>person_add</mat-icon>
                     Nouvel utilisateur
                   </button>
-                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/requests">
+                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/requests" *ngIf="isAdmin()">
                     <mat-icon>assignment</mat-icon>
                     Gérer demandes
                   </button>
+
+                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/my-requests">
+                    <mat-icon>list_alt</mat-icon>
+                    Mes demandes
+                  </button>
+
                   <button mat-stroked-button class="quick-action-btn" routerLink="/admin/complaints">
                     <mat-icon>support_agent</mat-icon>
                     Réclamations
@@ -500,6 +548,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
 export class AdminDashboardComponent implements OnInit {
   currentUser: User | null = null;
   recentRequests: Demande[] = [];
+  recentassignesRequest:Demande[]=[];
   allUsers: UserDTO[] = [];
   isLoading = true;
   
@@ -573,6 +622,17 @@ export class AdminDashboardComponent implements OnInit {
         console.error('Error loading recent requests:', error);
         this.recentRequests = [];
       }
+    });
+
+    this.requestService.getAssignedRequests(5).subscribe({
+      next: (requests) => {
+        this.recentassignesRequest = requests;
+      },
+      error: (error) => {
+        console.error('Error loading recent assignées requests:', error);
+        this.recentRequests = [];
+      }
+
     });
 
     // Load all users for request user info

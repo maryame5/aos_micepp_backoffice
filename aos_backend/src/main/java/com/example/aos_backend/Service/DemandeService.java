@@ -126,6 +126,51 @@ public class DemandeService {
     }
 
     @Transactional
+    public List<DemandeDTO> getRequestsAssignedToUser(Integer userId) {
+        Utilisateur user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé pour l'ID: " + userId));
+
+        List<Demande> demandes = demandeRepository.findByAssignedTo(user);
+
+        return demandes.stream().map(d -> DemandeDTO.builder()
+                .id(d.getId())
+                .description(d.getDescription())
+                .statut(d.getStatut().name())
+                .commentaire(d.getCommentaire())
+                .dateSoumission(d.getDateSoumission())
+                .utilisateurId(d.getUtilisateur().getId())
+                .utilisateurNom(d.getUtilisateur().fullname())
+                .utilisateurEmail(d.getUtilisateur().getEmail())
+                .serviceId(d.getService().getId())
+                .serviceNom(d.getService().getNom())
+                .documentsJustificatifs(d.getDocumentsJustificatifs() != null
+                        ? d.getDocumentsJustificatifs().stream()
+                                .map(doc -> DocumentJustificatifDto.builder()
+                                        .id(doc.getId())
+                                        .fileName(doc.getFileName())
+                                        .contentType(doc.getContentType())
+                                        .type(doc.getType())
+                                        .uploadedAt(doc.getUploadedAt() != null ? doc.getUploadedAt() : null)
+                                        .build())
+                                .toList()
+                        : List.of())
+                .documentReponse(d.getDocumentReponse() != null
+                        ? DocumentJustificatifDto.builder()
+                                .id(d.getDocumentReponse().getId())
+                                .fileName(d.getDocumentReponse().getFileName())
+                                .contentType(d.getDocumentReponse().getContentType())
+                                .type(d.getDocumentReponse().getType())
+                                .uploadedAt(d.getDocumentReponse().getUploadedAt() != null
+                                        ? d.getDocumentReponse().getUploadedAt()
+                                        : null)
+                                .build()
+                        : null)
+                .assignedToId(d.getAssignedTo() != null ? d.getAssignedTo().getId() : null)
+                .assignedToUsername(d.getAssignedTo() != null ? d.getAssignedTo().fullname() : null)
+                .build()).toList();
+    }
+
+    @Transactional
     public DemandeDTO getDemandeById(Long id) {
         Optional<Demande> demandeOpt = demandeRepository.findById(id);
         if (demandeOpt.isEmpty()) {

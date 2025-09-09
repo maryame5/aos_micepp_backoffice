@@ -69,6 +69,13 @@ export class RequestService {
     });
   }
 
+  getAssignedRequests(userId: number): Observable<Demande[]> {
+  return this.http.get<Demande[]>(`${this.apiUrl}/assigned/${userId}`, {
+    headers: this.getAuthHeaders()
+  });
+}
+
+
   assignRequest(id: number, userId: number): Observable<Demande> {
     console.log('Frontend: Sending assign request', { id, userId, url: `${this.apiUrl}/${id}/assign/${userId ?? 'null'}` });
     const headers = this.getAuthHeaders();

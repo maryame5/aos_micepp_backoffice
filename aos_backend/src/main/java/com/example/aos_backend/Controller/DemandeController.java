@@ -204,4 +204,16 @@ public class DemandeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @GetMapping("/assigned/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<DemandeDTO>> getRequestsAssignedToUser(@PathVariable Integer userId) {
+        try {
+            List<DemandeDTO> assignedRequests = demandeService.getRequestsAssignedToUser(userId);
+            return ResponseEntity.ok(assignedRequests);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(List.of());
+        }
+    }
 }
