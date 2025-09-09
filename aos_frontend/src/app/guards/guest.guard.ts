@@ -21,7 +21,7 @@ export class GuestGuard implements CanActivate {
             this.router.navigate(['/admin']);
             break;
           case UserRole.SUPPORT:
-            this.router.navigate(['/support']);
+            this.router.navigate(['/admin']);
             break;
           default:
             this.router.navigate(['/']);

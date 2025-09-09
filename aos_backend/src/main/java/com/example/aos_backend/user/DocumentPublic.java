@@ -23,16 +23,24 @@ public class DocumentPublic {
 
     private String titre;
 
-    @Column(name = "fichier_path")
-    private String fichier;
+    private String description;
+
+    @Column(name = "content_type")
+    private String contentType;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Lob
+    @Column(name = "content")
+    private byte[] content;
+
+    @Column(name = "type")
+    private String type;
 
     @ManyToOne
-    @JoinColumn(name = "published_by_admin_id")
-    private Admin publishedBy;
-
-    @ManyToOne
-    @JoinColumn(name = "published_by_support_id")
-    private Support publishedBySupport;
+    @JoinColumn(name = "published_by")
+    private Utilisateur publishedBy;
 
     @CreatedDate
     @Column(name = "created_date", updatable = false)

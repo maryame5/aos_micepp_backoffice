@@ -13,7 +13,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
@@ -32,8 +31,5 @@ public class Admin {
     @MapsId
     @JoinColumn(name = "id")
     private Utilisateur utilisateur;
-
-    @OneToMany(mappedBy = "publishedBy")
-    private List<DocumentPublic> publishedDocuments;
 
 }

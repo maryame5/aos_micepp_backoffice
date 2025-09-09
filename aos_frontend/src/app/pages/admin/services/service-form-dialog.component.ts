@@ -1,4 +1,3 @@
-// service-form-dialog.component.ts
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -137,14 +136,15 @@ interface DialogData {
   styles: [`
     .dialog-content {
       width: 100%;
-      max-height: 70vh;
+      max-height: 80vh;
       overflow-y: auto;
+      font-size: 16px;
     }
-
     .service-form {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      font-size: 16px;
     }
 
     .full-width {

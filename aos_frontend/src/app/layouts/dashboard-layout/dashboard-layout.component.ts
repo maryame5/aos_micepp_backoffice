@@ -65,7 +65,7 @@ import { User, UserRole } from '../../models/user.model';
               </a>
 
                <a mat-list-item routerLink="/admin/contact" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
-                <mat-icon matListItemIcon>contact</mat-icon>
+                <mat-icon matListItemIcon>message</mat-icon>
                 <span matListItemTitle>Messages de contact</span>
               </a>
 

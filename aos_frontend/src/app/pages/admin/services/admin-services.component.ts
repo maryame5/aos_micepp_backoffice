@@ -1,4 +1,3 @@
-// admin-services.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -12,31 +11,41 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatChipsModule } from '@angular/material/chips';
 import { AdminServiceService, ServiceDTO } from '../../../services/admin-service.service';
 import { ServiceFormDialogComponent } from './service-form-dialog.component';
+import { PageHeaderComponent } from "../../../components/shared/page-header/page-header.component";
 
 @Component({
   selector: 'app-admin-services',
   standalone: true,
   imports: [
-    CommonModule, 
-    MatCardModule, 
-    MatButtonModule, 
-    MatIconModule, 
+    CommonModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
     MatDialogModule,
     MatSnackBarModule,
     MatTableModule,
     MatSlideToggleModule,
-    MatChipsModule
-  ],
+    MatChipsModule,
+    PageHeaderComponent
+],
   template: `
     <div class="admin-services-page">
-      <div class="page-header">
-        <h1>Gestion des Services</h1>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
-          <mat-icon>add</mat-icon>
-          Nouveau Service
-        </button>
-      </div>
+ 
+
+        <app-page-header 
+        title="Gestion des Services" 
+        subtitle="Gérez le contenu des services de la plateforme">
+        <div slot="actions">
+          <button mat-raised-button color="primary" (click)="openCreateDialog()">
+            <mat-icon>add</mat-icon>
+            Nouveau Service
+          </button>
+        </div>
+      </app-page-header>
+
+
+
 
       <div class="services-content">
         <div class="loading-container" *ngIf="loading">
@@ -253,7 +262,7 @@ export class AdminServicesComponent implements OnInit {
 
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(ServiceFormDialogComponent, {
-      width: '600px',
+      width: '800px',
       data: { mode: 'create' }
     });
 
@@ -270,7 +279,7 @@ export class AdminServicesComponent implements OnInit {
 
   openEditDialog(service: ServiceDTO): void {
     const dialogRef = this.dialog.open(ServiceFormDialogComponent, {
-      width: '600px',
+      width: '800px',
       data: { mode: 'edit', service: service }
     });
 

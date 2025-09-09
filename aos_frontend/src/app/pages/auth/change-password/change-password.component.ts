@@ -259,7 +259,7 @@ export class ChangePasswordComponent implements OnInit {
         break;
       case 'SUPPORT':
         console.log('Redirecting to support dashboard');
-        this.router.navigate(['/agent/dashboard']);
+        this.router.navigate(['/admin/dashboard']);
         break;
       default:
         console.log('Redirecting to default route');
