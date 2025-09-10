@@ -1,6 +1,5 @@
 package com.example.aos_backend.Service;
 
-import java.net.http.HttpResponse.ResponseInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 public class DemandeService {
     private final DemandeRepository demandeRepository;
     private final UtilisateurRepository userRepository;
-    private final ServiceRepository serviceRepository;
     private final SupportRepository supportRepository;
     private final StorageRepository storageRepository;
 

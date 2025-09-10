@@ -18,7 +18,9 @@
     "@angular/router": "^20.0.0",
     "@ngx-translate/core": "^16.0.4",
     "@ngx-translate/http-loader": "^16.0.1",
+    "ngx-quill": "^28.0.1",
     "ngx-toastr": "^19.0.0",
+    "quill": "^2.0.3",
     "rxjs": "^7.8.1",
     "tslib": "^2.5.0",
     "zone.js": "~0.15.0"

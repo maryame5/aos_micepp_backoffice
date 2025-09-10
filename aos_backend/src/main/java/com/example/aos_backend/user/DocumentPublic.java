@@ -22,7 +22,8 @@ public class DocumentPublic {
     private Long id;
 
     private String titre;
-
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "content_type")

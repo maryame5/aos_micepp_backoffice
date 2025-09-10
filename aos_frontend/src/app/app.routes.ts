@@ -111,6 +111,18 @@ export const routes: Routes = [
         data: { roles: [UserRole.ADMIN] }
       },
       {
+        path: 'news/create',
+        loadComponent: () => import('./pages/admin/news/article-editor.component').then(m => m.ArticleEditorComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
+      },
+      {
+        path: 'news/edit/:id',
+        loadComponent: () => import('./pages/admin/news/article-editor.component').then(m => m.ArticleEditorComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN] }
+      },
+      {
         path: 'profile',
         loadComponent: () => import('./pages/admin/profile/admin-profile.component').then(m => m.AdminProfileComponent)
       },

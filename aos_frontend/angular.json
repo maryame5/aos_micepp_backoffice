@@ -37,7 +37,10 @@
             "scripts": [],
             "styles": [
               "src/custom-theme.scss",
-              "src/global_styles.css"
+              "src/global_styles.css",
+              "node_modules/quill/dist/quill.snow.css",
+              "node_modules/quill/dist/quill.bubble.css",
+              "node_modules/quill/dist/quill.core.css"
             ],
             "tsConfig": "tsconfig.app.json",
             "stylePreprocessorOptions": {

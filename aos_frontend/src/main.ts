@@ -12,6 +12,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { AuthInterceptor } from './app/interceptors/auth.interceptor';
+import { QuillModule } from 'ngx-quill';
 
 // Translation loader factory
 export function HttpLoaderFactory(http: HttpClient) {
@@ -39,7 +40,8 @@ bootstrapApplication(AppComponent, {
         timeOut: 3000,
         positionClass: 'toast-top-right',
         preventDuplicates: true,
-      })
+      }),
+      QuillModule.forRoot()
     )
   ]
   
