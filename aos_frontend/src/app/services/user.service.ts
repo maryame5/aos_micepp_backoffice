@@ -90,7 +90,7 @@ export class UserService {
           lastname: user.lastName || '',
           email: user.email,
           role: `ROLE_${user.role}` as string,
-          phone: user.phone,
+          phone: user.phoneNumber,
         
           createdAt: new Date(),
           updatedAt: new Date()
