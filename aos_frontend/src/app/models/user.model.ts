@@ -1,5 +1,6 @@
 export interface User {
-  phone: String;
+phoneNumber: string;
+  
   id: string;
   email: string;
   firstName: string;
@@ -48,6 +49,9 @@ export interface LoginResponse {
   userType: UserRole;
   email: string;
   mustChangePassword: boolean;
+  phoneNumber?: string;
+  department?: string;
+  isActive?: boolean;
 
   
 }

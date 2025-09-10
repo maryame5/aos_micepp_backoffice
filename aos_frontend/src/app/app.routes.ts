@@ -94,7 +94,7 @@ export const routes: Routes = [
         path: 'my-complaints',
         loadComponent: () => import('./pages/admin/my-complaints/my-complaints.component').then(m => m.MyComplaintsComponent)
       },
-        {
+      {
           path: 'contact',
           loadComponent: () => import('./pages/public/contact/contact.component').then(c =>c.AdminMessagesComponent)
          },
@@ -109,6 +109,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin/news/admin-news.component').then(m => m.AdminNewsComponent),
         canActivate: [AuthGuard],
         data: { roles: [UserRole.ADMIN] }
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./pages/admin/profile/admin-profile.component').then(m => m.AdminProfileComponent)
       },
       {
         path: '',
