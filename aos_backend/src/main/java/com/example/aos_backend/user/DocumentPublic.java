@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +26,7 @@ public class DocumentPublic {
     private String titre;
     @Lob
     @Column(columnDefinition = "TEXT")
+    @JsonIgnore
     private String description;
 
     @Column(name = "content_type")
@@ -34,6 +37,7 @@ public class DocumentPublic {
 
     @Lob
     @Column(name = "content")
+    @JsonIgnore
     private byte[] content;
 
     @Column(name = "type")

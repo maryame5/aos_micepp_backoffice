@@ -396,8 +396,20 @@ export class AdminNewsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // Use setTimeout to ensure ViewChild references are available
+    setTimeout(() => {
+      if (this.paginator) {
+        this.dataSource.paginator = this.paginator;
+        // Force paginator to update
+        this.paginator.page.subscribe(() => {
+          // This ensures the table updates when pagination changes
+          this.dataSource.connect();
+        });
+      }
+      if (this.sort) {
+        this.dataSource.sort = this.sort;
+      }
+    });
   }
 
   loadDocuments() {
@@ -405,12 +417,17 @@ export class AdminNewsComponent implements OnInit, AfterViewInit {
       next: (docs) => {
         this.dataSource.data = docs;
         // Ensure paginator is properly connected after data is loaded
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
-        if (this.sort) {
-          this.dataSource.sort = this.sort;
-        }
+        setTimeout(() => {
+          if (this.paginator) {
+            this.dataSource.paginator = this.paginator;
+            // Force a refresh of the paginator
+            this.paginator.length = docs.length;
+            this.paginator.firstPage();
+          }
+          if (this.sort) {
+            this.dataSource.sort = this.sort;
+          }
+        });
       },
       error: (error) => {
         this.showSnackBar('Erreur lors du chargement des documents', 'error');
