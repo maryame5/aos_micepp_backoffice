@@ -1,10 +1,10 @@
-spring: 
+spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres-aos:5432/aos_db}
-    username: ${SPRING_DATASOURCE_USERNAME:aos_pg}
-    password: ${SPRING_DATASOURCE_PASSWORD:Maryame1234}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -38,7 +38,7 @@ spring:
 application:
   security:
     jwt:
-      secret-key: 0Xft560/AaGtvlV7KqGlKPj8pBRubzWYxzGpvgg0LyRZdAi3WksRrhCq5myck+hJ
+      secret-key: ${JWT_SECRET_KEY}
       expiration: 86400000
   mailing:
     frontend:
