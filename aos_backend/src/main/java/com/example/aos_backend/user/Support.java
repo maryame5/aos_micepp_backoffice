@@ -1,16 +1,12 @@
 package com.example.aos_backend.user;
 
-import java.util.List;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.*;
-import lombok.experimental.*;
 
 @Getter
 @Setter

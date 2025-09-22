@@ -8,13 +8,17 @@ import org.springframework.stereotype.Repository;
 import com.example.aos_backend.user.Admin;
 import com.example.aos_backend.user.Agent;
 import com.example.aos_backend.user.Utilisateur;
+
 @Repository
-public interface AgentRepository  extends JpaRepository<Agent, Integer> {
+public interface AgentRepository extends JpaRepository<Agent, Integer> {
 
     Optional<Agent> findByUtilisateur(Utilisateur user);
+
     boolean existsByUtilisateur(Utilisateur user);
 
-    
-    // This interface can be extended with additional methods specific to Agent if needed
+    void deleteByUtilisateur(Utilisateur user);
+
+    // This interface can be extended with additional methods specific to Agent if
+    // needed
 
 }

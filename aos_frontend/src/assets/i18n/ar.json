@@ -65,5 +65,33 @@
     "french": "Français",
     "arabic": "العربية",
     "changeLanguage": "تغيير اللغة"
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "subtitle": "إدارة معلوماتي الشخصية وإعداداتي",
+    "personalInfoTab": "المعلومات الشخصية",
+    "securityTab": "الأمان",
+    "passwordResetTitle": "إعادة تعيين كلمة المرور",
+    "passwordResetSubtitle": "إذا نسيت كلمة المرور، اتصل بالمدير",
+    "passwordResetDescription": "لأسباب أمنية، لا يمكنك تعديل كلمة المرور مباشرة. إذا نسيت كلمة المرور، انقر على الزر أدناه لإشعار المدير.",
+    "accountInfoTitle": "معلومات الحساب",
+    "sending": "جاري الإرسال...",
+    "notifyAdmin": "إشعار المدير",
+    "firstName": "الاسم الأول",
+    "lastName": "الاسم الأخير",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "department": "القسم",
+    "role": "الدور",
+    "status": "الحالة",
+    "accountStatus": "حالة الحساب",
+    "lastLogin": "آخر دخول",
+    "notSpecified": "غير محدد",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "temporaryPassword": "كلمة مرور مؤقتة",
+    "never": "أبداً",
+    "resetSuccess": "تم إرسال الطلب بنجاح",
+    "resetError": "خطأ في إرسال الطلب"
   }
 }

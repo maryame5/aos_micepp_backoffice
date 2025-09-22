@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageHeaderComponent } from '../../../components/shared/page-header/page-header.component';
 import { AuthService } from '../../../services/auth.service';
 import { User } from '../../../models/user.model';
@@ -18,19 +19,20 @@ import { User } from '../../../models/user.model';
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
+    TranslateModule,
     PageHeaderComponent
   ],
   template: `
     <div class="profile-container">
-      <app-page-header 
-        title="Mon Profil" 
-        subtitle="Gérez vos informations personnelles et paramètres">
+      <app-page-header
+        title="{{ 'profile.title' | translate }}"
+        subtitle="{{ 'profile.subtitle' | translate }}">
       </app-page-header>
 
       <div class="profile-content" *ngIf="currentUser">
         <mat-tab-group class="profile-tabs">
           <!-- Personal Information Tab -->
-          <mat-tab label="Informations personnelles">
+          <mat-tab label="{{ 'profile.personalInfoTab' | translate }}">
             <div class="tab-content">
               <mat-card class="profile-card">
                 <mat-card-header>
@@ -46,31 +48,31 @@ import { User } from '../../../models/user.model';
                 <mat-card-content>
                   <div class="profile-info-grid">
                     <div class="info-item">
-                      <label>Prénom</label>
+                      <label>{{ 'profile.firstName' | translate }}</label>
                       <span>{{ currentUser.firstName }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Nom</label>
+                      <label>{{ 'profile.lastName' | translate }}</label>
                       <span>{{ currentUser.lastName }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Email</label>
+                      <label>{{ 'profile.email' | translate }}</label>
                       <span>{{ currentUser.email }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Téléphone</label>
-                      <span>{{ currentUser.phoneNumber || 'Non spécifié' }}</span>
+                      <label>{{ 'profile.phone' | translate }}</label>
+                      <span>{{ currentUser.phoneNumber || ('profile.notSpecified' | translate) }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Département</label>
-                      <span>{{ currentUser.department || 'Non spécifié' }}</span>
+                      <label>{{ 'profile.department' | translate }}</label>
+                      <span>{{ currentUser.department || ('profile.notSpecified' | translate) }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Rôle</label>
+                      <label>{{ 'profile.role' | translate }}</label>
                       <span>{{ getRoleLabel(currentUser.role) }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Statut</label>
+                      <label>{{ 'profile.status' | translate }}</label>
                       <span class="status-active">{{ getAccountStatus() }}</span>
                     </div>
                   </div>
@@ -80,18 +82,17 @@ import { User } from '../../../models/user.model';
           </mat-tab>
 
           <!-- Security Tab -->
-          <mat-tab label="Sécurité">
+          <mat-tab label="{{ 'profile.securityTab' | translate }}">
             <div class="tab-content">
               <mat-card class="security-card">
                 <mat-card-header>
-                  <mat-card-title>Réinitialisation du mot de passe</mat-card-title>
-                  <mat-card-subtitle>Si vous avez oublié votre mot de passe, contactez l'administrateur</mat-card-subtitle>
+                  <mat-card-title>{{ 'profile.passwordResetTitle' | translate }}</mat-card-title>
+                  <mat-card-subtitle>{{ 'profile.passwordResetSubtitle' | translate }}</mat-card-subtitle>
                 </mat-card-header>
 
                 <mat-card-content>
                   <p class="security-description">
-                    Pour des raisons de sécurité, vous ne pouvez pas modifier votre mot de passe directement.
-                    Si vous avez oublié votre mot de passe, cliquez sur le bouton ci-dessous pour notifier l'administrateur.
+                    {{ 'profile.passwordResetDescription' | translate }}
                   </p>
 
                   <div class="form-actions">
@@ -101,8 +102,8 @@ import { User } from '../../../models/user.model';
                       type="button"
                       (click)="requestPasswordReset()"
                       [disabled]="isRequestingReset">
-                      <mat-icon *ngIf="isRequestingReset">hourglass_empty</mat-icon>
-                      {{ isRequestingReset ? 'Envoi en cours...' : 'Notifier l\'administrateur' }}
+                    <mat-icon *ngIf="isRequestingReset">hourglass_empty</mat-icon>
+                    {{ isRequestingReset ? ('profile.sending' | translate) : ('profile.notifyAdmin' | translate) }}
                     </button>
                   </div>
                 </mat-card-content>
@@ -110,21 +111,21 @@ import { User } from '../../../models/user.model';
 
               <mat-card class="account-info-card">
                 <mat-card-header>
-                  <mat-card-title>Informations du compte</mat-card-title>
+                  <mat-card-title>{{ 'profile.accountInfoTitle' | translate }}</mat-card-title>
                 </mat-card-header>
                 <mat-card-content>
                   <div class="account-info-grid">
                     <div class="info-item">
-                      <label>Statut du compte</label>
-                      <span class="status-active">{{ currentUser.isActive ? 'Actif' : 'Inactif' }}</span>
+                      <label>{{ 'profile.accountStatus' | translate }}</label>
+                      <span class="status-active">{{ currentUser.isActive ? ('profile.active' | translate) : ('profile.inactive' | translate) }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Rôle</label>
+                      <label>{{ 'profile.role' | translate }}</label>
                       <span>{{ getRoleLabel(currentUser.role) }}</span>
                     </div>
                     <div class="info-item">
-                      <label>Dernière connexion</label>
-                      <span>{{ currentUser.lastLogin ? (currentUser.lastLogin | date:'short') : 'Jamais' }}</span>
+                      <label>{{ 'profile.lastLogin' | translate }}</label>
+                      <span>{{ currentUser.lastLogin ? (currentUser.lastLogin | date:'short') : ('profile.never' | translate) }}</span>
                     </div>
                   </div>
                 </mat-card-content>
@@ -274,7 +275,8 @@ export class AdminProfileComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -288,14 +290,14 @@ export class AdminProfileComponent implements OnInit {
       this.authService.resetPassword(this.currentUser.email).subscribe({
         next: (message: string) => {
           this.isRequestingReset = false;
-          this.snackBar.open(message, 'Fermer', {
+          this.snackBar.open(this.translate.instant('profile.resetSuccess'), this.translate.instant('common.close'), {
             duration: 5000,
             panelClass: ['success-snackbar']
           });
         },
         error: (error) => {
           this.isRequestingReset = false;
-          this.snackBar.open('Erreur lors de l\'envoi de la demande', 'Fermer', {
+          this.snackBar.open(this.translate.instant('profile.resetError'), this.translate.instant('common.close'), {
             duration: 5000,
             panelClass: ['error-snackbar']
           });
@@ -306,16 +308,10 @@ export class AdminProfileComponent implements OnInit {
 
   getAccountStatus(): string {
     const mustChangePassword = localStorage.getItem('mustChangePassword') === 'true';
-    return mustChangePassword ? 'Mot de passe temporaire' : 'Actif';
+    return this.translate.instant(mustChangePassword ? 'profile.temporaryPassword' : 'profile.active');
   }
 
   getRoleLabel(role: string): string {
-    const roleLabels: Record<string, string> = {
-      'ADMIN': 'Administrateur',
-      'SUPPORT': 'Support',
-      'AGENT': 'Agent',
-      'VISITOR': 'Visiteur'
-    };
-    return roleLabels[role] || role;
+    return this.translate.instant('roles.' + role.toLowerCase());
   }
 }

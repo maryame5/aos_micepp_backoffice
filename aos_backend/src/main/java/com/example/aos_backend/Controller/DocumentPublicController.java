@@ -1,10 +1,12 @@
 package com.example.aos_backend.Controller;
 
 import com.example.aos_backend.Repository.AdminRepository;
+import com.example.aos_backend.Repository.DocumentPublicRepository;
 import com.example.aos_backend.Repository.UtilisateurRepository;
 import com.example.aos_backend.Service.DocumentPublicService;
 import com.example.aos_backend.dto.DocumentPublicDTO;
 import com.example.aos_backend.user.Admin;
+import com.example.aos_backend.user.DocumentPublic;
 import com.example.aos_backend.user.Utilisateur;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +35,7 @@ public class DocumentPublicController {
     private final DocumentPublicService documentPublicService;
     private final UtilisateurRepository utilisateurRepository;
     private final AdminRepository adminRepository;
+    private final DocumentPublicRepository documentPublicRepository;
 
     @GetMapping
     public ResponseEntity<List<DocumentPublicDTO>> getAllDocuments() {
@@ -58,7 +61,7 @@ public class DocumentPublicController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')OR hasRole('SUPPORT')")
     public ResponseEntity<DocumentPublicDTO> createDocument(
             @RequestParam("titre") String titre,
             @RequestParam("description") String description,
@@ -70,12 +73,6 @@ public class DocumentPublicController {
             Utilisateur user = utilisateurRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-            // Vérifier que l'utilisateur est un admin
-            Optional<Admin> adminOpt = adminRepository.findByUtilisateur(user);
-            if (adminOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             DocumentPublicDTO document = documentPublicService.createDocument(titre, description, type, file, user);
             return ResponseEntity.status(HttpStatus.CREATED).body(document);
         } catch (Exception e) {
@@ -84,7 +81,7 @@ public class DocumentPublicController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') OR hasRole('SUPPORT')")
     public ResponseEntity<DocumentPublicDTO> updateDocument(
             @PathVariable Long id,
             @RequestParam("titre") String titre,
@@ -97,12 +94,17 @@ public class DocumentPublicController {
             Utilisateur user = utilisateurRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-            // Vérifier que l'utilisateur est un admin
-            Optional<Admin> adminOpt = adminRepository.findByUtilisateur(user);
-            if (adminOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            Optional<DocumentPublic> doc = documentPublicRepository.findById(id);
+            if (doc.isEmpty()) {
+                return ResponseEntity.notFound().build();
             }
+            DocumentPublic documentPublic = doc.get();
+            if (!documentPublic.getPublishedBy().getId().equals(user.getId())
+                    && adminRepository.findByUtilisateur(user).isEmpty()) {
 
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+            }
             DocumentPublicDTO document = documentPublicService.updateDocument(id, titre, description, type, file);
             if (document == null) {
                 return ResponseEntity.notFound().build();
@@ -114,7 +116,7 @@ public class DocumentPublicController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')OR hasRole('SUPPORT')")
     public ResponseEntity<Void> deleteDocument(@PathVariable Long id) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

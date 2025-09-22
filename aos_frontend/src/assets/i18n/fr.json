@@ -41,9 +41,9 @@
     "settings": "Paramètres"
   },
   "roles": {
-    "admin": "Administrateur",
-    "support": "Support",
-    "agent": "Agent",
+    "role_admin": "Administrateur",
+    "role_support": "Support",
+    "role_agent": "Agent",
     "visitor": "Visiteur"
   },
   "dashboard": {
@@ -65,5 +65,33 @@
     "french": "Français",
     "arabic": "العربية",
     "changeLanguage": "Changer de langue"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "subtitle": "Gérez vos informations personnelles et paramètres",
+    "personalInfoTab": "Informations personnelles",
+    "securityTab": "Sécurité",
+    "passwordResetTitle": "Réinitialisation du mot de passe",
+    "passwordResetSubtitle": "Si vous avez oublié votre mot de passe, contactez l'administrateur",
+    "passwordResetDescription": "Pour des raisons de sécurité, vous ne pouvez pas modifier votre mot de passe directement. Si vous avez oublié votre mot de passe, cliquez sur le bouton ci-dessous pour notifier l'administrateur.",
+    "accountInfoTitle": "Informations du compte",
+    "sending": "Envoi en cours...",
+    "notifyAdmin": "Notifier l'administrateur",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "department": "Département",
+    "role": "Rôle",
+    "status": "Statut",
+    "accountStatus": "Statut du compte",
+    "lastLogin": "Dernière connexion",
+    "notSpecified": "Non spécifié",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "temporaryPassword": "Mot de passe temporaire",
+    "never": "Jamais",
+    "resetSuccess": "Demande envoyée avec succès",
+    "resetError": "Erreur lors de l'envoi de la demande"
   }
 }

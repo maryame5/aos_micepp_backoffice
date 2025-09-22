@@ -57,23 +57,9 @@ import { MatSelectModule } from '@angular/material/select';
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <mat-form-field >
-              <mat-label>Rôle</mat-label>
-              <mat-select [ngModel]="selectedRole" (ngModelChange)="applyFilters()">
-                <mat-option value="">Tous les rôles</mat-option>
-                <mat-option value="AGENT">Agent</mat-option>
-                <mat-option value="SUPPORT">Support</mat-option>
-                <mat-option value="ADMIN">Administrateur</mat-option>
-              </mat-select>
-            </mat-form-field>
 
-            <mat-form-field >
-              <mat-label>Département</mat-label>
-              <mat-select [ngModel]="selectedDepartment" (ngModelChange)="applyFilters()">
-                <mat-option value="">Tous les départements</mat-option>
-                <mat-option *ngFor="let dept of uniqueDepartments" [value]="dept">{{ dept }}</mat-option>
-              </mat-select>
-            </mat-form-field>
+
+
 
             <button mat-icon-button (click)="clearFilters()" title="Effacer les filtres">
               <mat-icon>clear</mat-icon>
@@ -89,7 +75,7 @@ import { MatSelectModule } from '@angular/material/select';
               </ng-container>
               <ng-container matColumnDef="username">
                 <th mat-header-cell *matHeaderCellDef> Nom </th>
-                <td mat-cell *matCellDef="let user"> {{ user.firstName }} {{ user.lastName }} </td>
+                <td mat-cell *matCellDef="let user"> {{ user.firstname }} {{ user.lastname }} </td>
               </ng-container>
               <ng-container matColumnDef="email">
                 <th mat-header-cell *matHeaderCellDef> Email </th>

@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { User, UserDTO, UserRole } from '../models/user.model';
+import { environment } from '../../environments/environment';
 
 export interface RegisterUserRequest {
   firstName: string;
@@ -19,13 +20,11 @@ export interface RegisterUserRequest {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8089/AOS_MICEPP/api/v1/admin/users';
+  private apiUrl = environment.apiUrl + '/api/v1/admin/users';
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Register a new user
-   */
+
   registerUser(userData: RegisterUserRequest): Observable<any> {
     console.log('Registering user with data:', userData);
     console.log('API URL:', `${this.apiUrl}/register-user`);
@@ -36,22 +35,23 @@ export class UserService {
       );
   }
 
-  /**
-   * Get all users
-   */
+ 
   getAllUsers(): Observable<UserDTO[]> {
-  
+
   return this.http.get<UserDTO[]>(this.apiUrl).pipe(
     map(users => users.map(user => ({
       id: user.id,
-      firstName: user.firstname ,
-      lastName: user.lastname ,
-      department:user.department,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      department: user.department,
       email: user.email,
-      user:user,
+      username: user.username || '',
+      enabled: user.enabled,
       role: user.role,
       usingTemporaryPassword: user.usingTemporaryPassword,
       phone: user.phone,
+      cin: user.cin,
+      matricule: user.matricule,
       createdAt: new Date(),
       updatedAt: new Date()
     } as unknown as UserDTO))),
@@ -59,28 +59,39 @@ export class UserService {
   );
 }
 
-  /**
-   * Get user by ID
-   */
+  
   getUserById(id: string): Observable<UserDTO> {
     return this.http.get<UserDTO>(`${this.apiUrl}/${id}`).pipe(
+      map(user => ({
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        department: user.department,
+        email: user.email,
+        matricule: user.matricule,
+        cin: user.cin,
+        username: user.username || '',
+        enabled: user.enabled,
+        role: user.role,
+        usingTemporaryPassword: user.usingTemporaryPassword,
+        phone: user.phone,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      } as unknown as UserDTO)),
       catchError(this.handleError)
     );
   }
 
-  /**
-   * Get users count
-   */
+
   getUsersCount(): Observable<number> {
     return this.http.get<number>(`${this.apiUrl}/count`)
       .pipe(
+        
         catchError(this.handleError)
       );
   }
 
-  /**
-   * Get users by role
-   */
+  
   getUsersByRole(role: string): Observable<User[]> {
     return this.http.get<User[]>(`${this.apiUrl}/role/${role}`)
       .pipe(
@@ -99,20 +110,23 @@ export class UserService {
       );
   }
 
-  /**
-   * Get recent users (last 30 days)
-   */
+ 
   getRecentUsers(): Observable<UserDTO[]> {
     return this.http.get<UserDTO[]>(`${this.apiUrl}/recent`)
       .pipe(
         map(users => users.map(user => ({
           id: user.id,
           firstname: user.firstname || '',
-          lastName: user.lastname || '',
+          lastname: user.lastname || '',
           email: user.email,
+          username: user.username || '',
+          enabled: user.enabled,
           role: `ROLE_${user.role}` as string,
+          usingTemporaryPassword: user.usingTemporaryPassword,
           phone: user.phone,
-
+          cin: user.cin,
+          matricule: user.matricule,
+          department: user.department,
           createdAt: new Date(),
           updatedAt: new Date()
         } as unknown as UserDTO))),
@@ -120,25 +134,33 @@ export class UserService {
       );
   }
 
-  updateUser(user: UserDTO): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${user.id}`, user)
-      .pipe(
-        catchError(this.handleError)
-      );
+  updateUser(id: String, userData: Partial<UserDTO>): Observable<UserDTO> {
+    return this.http.put<UserDTO>(`${this.apiUrl}/${id}`, userData);
   }
 
+ 
+  resetUserPassword(id: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/reset-password`, {});
+  }
 
-  /**
-   * Handle HTTP errors
-   */
+  toggleUserStatus(id: number, enabled: boolean): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/toggle-status`, null, {
+      params: { enabled: enabled.toString() }
+    });
+  }
+
+  deleteUser(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Une erreur est survenue';
     
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
+     
       errorMessage = `Erreur client: ${error.error.message}`;
     } else {
-      // Server-side error
+  
       switch (error.status) {
         case 400:
           errorMessage = 'Données invalides. Vérifiez les informations saisies.';

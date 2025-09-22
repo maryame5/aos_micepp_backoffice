@@ -364,7 +364,7 @@ export class LoginComponent implements OnInit {
         break;
       case 'SUPPORT':
         console.log('Redirecting to support dashboard');
-        this.router.navigate(['/support/dashboard']);
+        this.router.navigate(['/admin/dashboard']);
         break;
       default:
         alert('Accès non autorisé');

@@ -27,6 +27,7 @@ public class DocumentPublic {
     @Lob
     @Column(columnDefinition = "TEXT")
     @JsonIgnore
+
     private String description;
 
     @Column(name = "content_type")

@@ -44,6 +44,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./pages/admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+
       },
       {
         path: 'users',
@@ -64,6 +65,16 @@ export const routes: Routes = [
         data: { roles: [UserRole.ADMIN] }
       },
       {
+          path: ':id/edit',
+          loadComponent: () => import('./pages/admin/users/edit-user/edit-user.component').then(m => m.UserEditComponent),
+            canActivate: [AuthGuard],
+          data: { roles: [UserRole.ADMIN] }
+        },
+
+
+
+        
+      {
         path: 'requests',
         loadComponent: () => import('./pages/admin/requests/admin-requests.component').then(m => m.AdminRequestsComponent),
         canActivate: [AuthGuard],
@@ -72,12 +83,17 @@ export const routes: Routes = [
 
       {
         path: 'requests/:id',
-        loadComponent: () => import('./pages/admin/requests/request-detail/request-detail.component').then(m => m.AdminRequestDetailComponent)
+        loadComponent: () => import('./pages/admin/requests/request-detail/request-detail.component').then(m => m.AdminRequestDetailComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: 'my-requests',
-        loadComponent: () => import('./pages/admin/my-requests/my-requests.component').then(m => m.MyRequestsComponent)
-      },
+        loadComponent: () => import('./pages/admin/my-requests/my-requests.component').then(m => m.MyRequestsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
+
+              },
       {
         path: 'complaints',
         loadComponent: () => import('./pages/admin/complaints/admin-complaints.component').then(m => m.AdminComplaintsComponent),
@@ -88,15 +104,19 @@ export const routes: Routes = [
         path: 'complaints/:id',
         loadComponent: () => import('./pages/admin/complaints/complaint-detail/complaint-detail.component').then(m => m.AdminComplaintDetailComponent),
         canActivate: [AuthGuard],
-        data: { roles: [UserRole.ADMIN] }
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: 'my-complaints',
-        loadComponent: () => import('./pages/admin/my-complaints/my-complaints.component').then(m => m.MyComplaintsComponent)
+        loadComponent: () => import('./pages/admin/my-complaints/my-complaints.component').then(m => m.MyComplaintsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
           path: 'contact',
-          loadComponent: () => import('./pages/public/contact/contact.component').then(c =>c.AdminMessagesComponent)
+          loadComponent: () => import('./pages/public/contact/contact.component').then(c =>c.AdminMessagesComponent),
+          canActivate: [AuthGuard],
+          data: { roles: [UserRole.ADMIN,UserRole.SUPPORT] }
          },
       {
         path: 'services',
@@ -108,23 +128,25 @@ export const routes: Routes = [
         path: 'news',
         loadComponent: () => import('./pages/admin/news/admin-news.component').then(m => m.AdminNewsComponent),
         canActivate: [AuthGuard],
-        data: { roles: [UserRole.ADMIN] }
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: 'news/create',
         loadComponent: () => import('./pages/admin/news/article-editor.component').then(m => m.ArticleEditorComponent),
         canActivate: [AuthGuard],
-        data: { roles: [UserRole.ADMIN] }
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: 'news/edit/:id',
         loadComponent: () => import('./pages/admin/news/article-editor.component').then(m => m.ArticleEditorComponent),
         canActivate: [AuthGuard],
-        data: { roles: [UserRole.ADMIN] }
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: 'profile',
-        loadComponent: () => import('./pages/admin/profile/admin-profile.component').then(m => m.AdminProfileComponent)
+        loadComponent: () => import('./pages/admin/profile/admin-profile.component').then(m => m.AdminProfileComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
         path: '',

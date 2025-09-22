@@ -42,7 +42,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
       <div class="dashboard-content" *ngIf="!isLoading">
         <!-- Stats Overview -->
         <div class="stats-grid">
-          <mat-card class="stat-card users">
+          <mat-card class="stat-card users" *ngIf="isAdmin()">
             <div class="stat-content">
               <div class="stat-icon">
                 <mat-icon>people</mat-icon>
@@ -97,8 +97,9 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
 
         <!-- Charts and Recent Activity -->
         <div class="dashboard-sections">
-          <!-- Recent Requests -->
-          <div class="recent-section" *ngIf="isAdmin()">
+          <div class="requests-container">
+            <!-- Recent Requests -->
+            <div class="recent-section" *ngIf="isAdmin()" style="order: 2">
             <mat-card>
               <mat-card-header>
                 <mat-card-title>Demandes récentes</mat-card-title>
@@ -140,7 +141,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
           </div>
 
           <!-- assigned Requests -->
-          <div class="recent-section" >
+          <div class="recent-section" style="order: 1">
             <mat-card>
               <mat-card-header>
                 <mat-card-title>Demandes assignées</mat-card-title>
@@ -180,6 +181,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
               </mat-card-content>
             </mat-card>
           </div>
+          </div>
 
           <!-- Quick Actions -->
           <div class="actions-section">
@@ -208,7 +210,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
                     Mes réclamations
                   </button>
 
-                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/complaints">
+                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/complaints"*ngIf="isAdmin()">
                     <mat-icon>support_agent</mat-icon>
                     Réclamations
                   </button>
@@ -216,7 +218,7 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
                     <mat-icon>business_center</mat-icon>
                     Services
                   </button>
-                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/news" *ngIf="isAdmin()">
+                  <button mat-stroked-button class="quick-action-btn" routerLink="/admin/news" >
                     <mat-icon>article</mat-icon>
                     Actualités
                   </button>
@@ -366,6 +368,12 @@ import { User, UserDTO, UserRole } from '../../../models/user.model';
     .dashboard-sections {
       display: grid;
       grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    .requests-container {
+      display: flex;
+      flex-direction: column;
       gap: 2rem;
     }
 

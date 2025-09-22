@@ -33,7 +33,7 @@ import { ThemeService } from '../../../services/theme.service';
       </button>
 
       <div class="header-title">
-        <h1 class="text-xl font-semibold text-primary-700">AOS MICEPP</h1>
+        <h1 class="text-xl font-semibold text-primary-700">AOS MICEPP </h1>
       </div>
 
       <div class="header-actions">

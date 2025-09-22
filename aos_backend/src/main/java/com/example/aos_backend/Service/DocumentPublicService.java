@@ -64,6 +64,7 @@ public class DocumentPublicService {
     @Transactional
     public DocumentPublicDTO updateDocument(Long id, String titre, String description, String type,
             MultipartFile file) {
+
         return documentPublicRepository.findById(id)
                 .map(document -> {
                     try {

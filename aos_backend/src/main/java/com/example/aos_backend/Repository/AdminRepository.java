@@ -11,5 +11,8 @@ import com.example.aos_backend.user.Utilisateur;
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Integer> {
     Optional<Admin> findByUtilisateur(Utilisateur user);
+
     boolean existsByUtilisateur(Utilisateur user);
-} 
+
+    void deleteByUtilisateur(Utilisateur user);
+}

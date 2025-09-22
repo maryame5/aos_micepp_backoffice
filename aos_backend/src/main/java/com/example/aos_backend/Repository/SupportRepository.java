@@ -11,6 +11,9 @@ import com.example.aos_backend.user.Utilisateur;
 @Repository
 public interface SupportRepository extends JpaRepository<Support, Integer> {
 
-     boolean existsByUtilisateur(Utilisateur user);
+        boolean existsByUtilisateur(Utilisateur user);
+
         Optional<Support> findByUtilisateur(Utilisateur user);
-} 
+
+        void deleteByUtilisateur(Utilisateur user);
+}

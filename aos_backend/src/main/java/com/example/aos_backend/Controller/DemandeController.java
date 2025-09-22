@@ -56,7 +56,7 @@ public class DemandeController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPPORT')")
     public ResponseEntity<DemandeDTO> getDemandeById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(demandeService.getDemandeById(id));
@@ -118,6 +118,24 @@ public class DemandeController {
         }
     }
 
+    @PatchMapping("/{id}/assign/null")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<DemandeDTO> unassignRequest(@PathVariable Long id) {
+        log.info("Controller: unassignRequest called - id: {}", id);
+        try {
+            DemandeDTO updatedDemande = demandeService.assignRequest(id, null);
+            log.info("Controller: Unassign request successful");
+            return ResponseEntity.ok(updatedDemande);
+        } catch (IllegalArgumentException e) {
+            log.error("Controller: IllegalArgumentException - {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            log.error("Controller: Exception - {}", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @PatchMapping("/{id}/assign/{userId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<DemandeDTO> assignRequest(@PathVariable Long id, @PathVariable Integer userId) {
@@ -129,10 +147,7 @@ public class DemandeController {
         }
         try {
             log.info("Controller: Processing assign request");
-            if (userId == null) {
-                log.warn("Controller: userId is null");
-                return ResponseEntity.badRequest().build();
-            }
+
             log.info("Controller: Calling demandeService.assignRequest");
             DemandeDTO updatedDemande = demandeService.assignRequest(id, userId);
             log.info("Controller: Assign request successful");
@@ -148,7 +163,7 @@ public class DemandeController {
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPPORT')")
     public ResponseEntity<Long> getRequestsCount() {
         try {
             long count = demandeService.getAllDemandes().size();
@@ -160,7 +175,7 @@ public class DemandeController {
     }
 
     @GetMapping("/count/pending")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPPORT')")
     public ResponseEntity<Long> getPendingRequestsCount() {
         try {
             long count = demandeService.getAllDemandes().stream()
@@ -174,7 +189,7 @@ public class DemandeController {
     }
 
     @GetMapping("/recent")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPPORT')")
     public ResponseEntity<List<DemandeDTO>> getRecentRequests(@RequestParam(defaultValue = "5") int limit) {
         try {
             List<DemandeDTO> recentRequests = demandeService.getAllDemandes().stream()
@@ -206,7 +221,7 @@ public class DemandeController {
     }
 
     @GetMapping("/assigned/{userId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize(" hasRole('SUPPORT') or hasRole('ADMIN')")
     public ResponseEntity<List<DemandeDTO>> getRequestsAssignedToUser(@PathVariable Integer userId) {
         try {
             List<DemandeDTO> assignedRequests = demandeService.getRequestsAssignedToUser(userId);

@@ -18,4 +18,8 @@ public interface ReclamationRepository extends JpaRepository<Reclamation, Long> 
 
     List<Reclamation> findByAssignedTo(Utilisateur user);
 
+    List<Reclamation> findByUtilisateur(Utilisateur utilisateur);
+
+    boolean existsByUtilisateur(Utilisateur utilisateur);
+
 }

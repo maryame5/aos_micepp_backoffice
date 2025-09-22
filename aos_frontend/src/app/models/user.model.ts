@@ -21,6 +21,7 @@ export interface UserDTO {
   firstname:String;
   lastname:String
   email: string;
+  enabled: boolean;
   role: string;
   department:String;
   usingTemporaryPassword: boolean;

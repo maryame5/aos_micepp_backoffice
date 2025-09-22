@@ -15,30 +15,49 @@ export class LanguageService {
     this.initializeLanguage();
   }
 
-  private initializeLanguage(): void {
+  private async initializeLanguage(): Promise<void> {
     const savedLanguage = localStorage.getItem(this.LANGUAGE_KEY) || 'fr';
-    this.setLanguage(savedLanguage);
+    console.log('Initializing language:', savedLanguage);
+    await this.setLanguage(savedLanguage);
   }
 
-  setLanguage(language: string): void {
-    // Set the language in the translate service
-    this.translate.use(language);
-    
-    // Update the current language subject
-    this.currentLanguageSubject.next(language);
-    
-    // Save to localStorage
-    localStorage.setItem(this.LANGUAGE_KEY, language);
-    
-    // Set document direction for RTL languages
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = language;
-    
-    // Add RTL class to body for styling
-    document.body.classList.toggle('rtl', language === 'ar');
-    document.body.classList.toggle('ltr', language !== 'ar');
-    
-    console.log(`Language changed to: ${language}`);
+  async setLanguage(language: string): Promise<void> {
+    try {
+      console.log(`Attempting to change language to: ${language}`);
+      
+      // Vérifier si la langue est disponible
+      const availableLanguages = this.getAvailableLanguages();
+      const isValidLanguage = availableLanguages.some(lang => lang.code === language);
+      
+      if (!isValidLanguage) {
+        console.warn(`Language ${language} is not available. Falling back to 'fr'`);
+        language = 'fr';
+      }
+
+      // Attendre que la traduction soit chargée
+      const translation = await this.translate.use(language).toPromise();
+      console.log('Translation loaded:', translation ? 'Success' : 'Failed');
+      
+      // Update the current language subject
+      this.currentLanguageSubject.next(language);
+      
+ 
+      localStorage.setItem(this.LANGUAGE_KEY, language);
+      
+   
+      document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+      document.documentElement.lang = language;
+      
+  
+      document.body.classList.remove('rtl', 'ltr');
+      document.body.classList.add(language === 'ar' ? 'rtl' : 'ltr');
+      
+      console.log(`Language successfully changed to: ${language}`);
+      console.log('Current translate service language:', this.translate.currentLang);
+      
+    } catch (error) {
+      console.error('Error changing language:', error);
+    }
   }
 
   getCurrentLanguage(): string {
@@ -56,8 +75,22 @@ export class LanguageService {
     ];
   }
 
-  // Method to get translated text
+  // Method to get translated text with fallback
   getText(key: string, params?: any): string {
-    return this.translate.instant(key, params);
+    const translation = this.translate.instant(key, params);
+    
+    // Si la traduction retourne la clé, cela signifie qu'elle n'a pas été trouvée
+    if (translation === key) {
+      console.warn(`Translation key '${key}' not found for language '${this.getCurrentLanguage()}'`);
+    }
+    
+    return translation;
+  }
+
+  // Méthode pour forcer le rechargement des traductions
+  async reloadTranslations(): Promise<void> {
+    const currentLang = this.getCurrentLanguage();
+    this.translate.reloadLang(currentLang);
+    await this.translate.use(currentLang).toPromise();
   }
 }

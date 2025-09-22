@@ -258,6 +258,7 @@ public class DemandeService {
             }
         }
         demande.setAssignedTo(user);
+        demande.setLastModifiedDate(new java.sql.Timestamp(System.currentTimeMillis()).toLocalDateTime());
         demande = demandeRepository.save(demande);
         return DemandeDTO.builder()
                 .id(demande.getId())

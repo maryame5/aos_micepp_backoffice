@@ -36,7 +36,7 @@ interface DialogData {
 
     <mat-dialog-content class="dialog-content">
       <form [formGroup]="serviceForm" class="service-form">
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field  class="full-width">
           <mat-label>Nom du service</mat-label>
           <input matInput formControlName="nom" placeholder="Ex: Transport du personnel">
           <mat-error *ngIf="serviceForm.get('nom')?.hasError('required')">
@@ -44,7 +44,7 @@ interface DialogData {
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width" *ngIf="data.mode === 'create'">
+        <mat-form-field  class="full-width" *ngIf="data.mode === 'create'">
           <mat-label>Type de service</mat-label>
           <mat-select formControlName="type">
             <mat-option *ngFor="let type of serviceTypes" [value]="type">
@@ -56,7 +56,7 @@ interface DialogData {
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field  class="full-width">
           <mat-label>Titre d'affichage</mat-label>
           <input matInput formControlName="title" placeholder="Ex: Service de Transport">
           <mat-error *ngIf="serviceForm.get('title')?.hasError('required')">
@@ -64,7 +64,7 @@ interface DialogData {
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field  class="full-width">
           <mat-label>Icône</mat-label>
           <mat-select formControlName="icon">
             <mat-option *ngFor="let icon of availableIcons" [value]="icon.value">
@@ -77,7 +77,7 @@ interface DialogData {
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field  class="full-width">
           <mat-label>Description</mat-label>
           <textarea 
             matInput 
@@ -96,7 +96,7 @@ interface DialogData {
             <div 
               *ngFor="let feature of featuresFormArray.controls; let i = index" 
               class="feature-item">
-              <mat-form-field appearance="outline" class="feature-input">
+              <mat-form-field  class="feature-input">
                 <mat-label>Fonctionnalité {{ i + 1 }}</mat-label>
                 <input matInput [formControlName]="i" placeholder="Ex: Prise en charge domicile-travail">
               </mat-form-field>

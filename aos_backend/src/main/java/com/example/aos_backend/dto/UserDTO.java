@@ -20,5 +20,6 @@ public class UserDTO {
     private String cin;
     private String matricule;
     private String department;
+    private boolean enabled;
 
 }

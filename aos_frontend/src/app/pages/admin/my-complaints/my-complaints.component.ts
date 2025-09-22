@@ -70,7 +70,7 @@ import { AuthService } from '../../../services/auth.service';
 
             <ng-container matColumnDef="utilisateurNom">
               <th mat-header-cell *matHeaderCellDef> Utilisateur </th>
-              <td mat-cell *matCellDef="let reclamation"> {{ reclamation.utilisateur.firstName }} {{ reclamation.utilisateur.lastName }} </td>
+              <td mat-cell *matCellDef="let reclamation"> {{ reclamation.utilisateur.firstname }} {{ reclamation.utilisateur.lastName }} </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

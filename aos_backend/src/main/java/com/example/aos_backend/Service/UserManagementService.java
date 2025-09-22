@@ -2,6 +2,7 @@ package com.example.aos_backend.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -173,6 +174,189 @@ public class UserManagementService {
                 .build())
                 .toList();
 
+    }
+
+    @Transactional
+    public UserDTO updateUser(Integer userId, UserDTO userDTO) throws Exception {
+        try {
+            // Vérifier que l'utilisateur existe
+            Utilisateur existingUser = userRepository.findById(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+            // Vérifier l'unicité de l'email si modifié
+            if (userDTO.getEmail() != null && !userDTO.getEmail().equals(existingUser.getEmail())) {
+                if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                    throw new IllegalArgumentException("Email already exists: " + userDTO.getEmail());
+                }
+                existingUser.setEmail(userDTO.getEmail());
+            }
+
+            // Vérifier l'unicité du CIN si modifié
+            if (userDTO.getCin() != null && !userDTO.getCin().equals(existingUser.getCin())) {
+                if (userRepository.findByCin(userDTO.getCin()).isPresent()) {
+                    throw new IllegalArgumentException("CIN already exists: " + userDTO.getCin());
+                }
+                existingUser.setCin(userDTO.getCin());
+            }
+
+            // Vérifier l'unicité du matricule si modifié
+            if (userDTO.getMatricule() != null && !userDTO.getMatricule().equals(existingUser.getMatricule())) {
+                if (userRepository.findByMatricule(userDTO.getMatricule()).isPresent()) {
+                    throw new IllegalArgumentException("Matricule already exists: " + userDTO.getMatricule());
+                }
+                existingUser.setMatricule(userDTO.getMatricule());
+            }
+
+            // Mettre à jour les autres champs
+            if (userDTO.getFirstname() != null) {
+                existingUser.setFirstname(userDTO.getFirstname());
+            }
+            if (userDTO.getLastname() != null) {
+                existingUser.setLastname(userDTO.getLastname());
+            }
+            if (userDTO.getPhone() != null) {
+                existingUser.setPhone(userDTO.getPhone());
+            }
+            if (userDTO.getDepartment() != null) {
+                existingUser.setDepartment(userDTO.getDepartment());
+            }
+
+            // Gestion de la mise à jour du rôle
+            if (userDTO.getRole() != null && !userDTO.getRole().isEmpty() && !userDTO.getRole().equals("N/A")) {
+                String currentRole = existingUser.getRoles().isEmpty() ? "" : existingUser.getRoles().get(0).getName();
+
+                if (!userDTO.getRole().equalsIgnoreCase(currentRole)) {
+                    updateUserRole(existingUser, userDTO.getRole());
+                }
+            }
+
+            // Sauvegarder l'utilisateur mis à jour
+            Utilisateur savedUser = userRepository.save(existingUser);
+
+            // Retourner le DTO mis à jour
+            return UserDTO.builder()
+                    .id(savedUser.getId())
+                    .firstname(savedUser.getFirstname())
+                    .lastname(savedUser.getLastname())
+                    .email(savedUser.getEmail())
+                    .role(savedUser.getRoles().isEmpty() ? "N/A" : savedUser.getRoles().get(0).getName())
+                    .usingTemporaryPassword(savedUser.isUsingTemporaryPassword())
+                    .department(savedUser.getDepartment())
+                    .phone(savedUser.getPhone())
+                    .cin(savedUser.getCin())
+                    .matricule(savedUser.getMatricule())
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating user with ID: " + userId, e);
+        }
+    }
+
+    @Transactional
+    private void updateUserRole(Utilisateur user, String newRoleName) throws Exception {
+        // Récupérer l'ancien rôle
+        String oldRole = user.getRoles().isEmpty() ? "" : user.getRoles().get(0).getName();
+
+        // Récupérer le nouveau rôle
+        Role newRole = roleRepository.findByName(newRoleName.toUpperCase())
+                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + newRoleName));
+
+        // Supprimer les anciennes entités spécifiques au rôle
+        cleanupOldRoleEntities(user, oldRole);
+
+        // Mettre à jour le rôle de l'utilisateur
+        user.setRoles(new ArrayList<>(List.of(newRole)));
+
+        // Créer les nouvelles entités spécifiques au rôle
+        createNewRoleEntities(user, newRoleName.toUpperCase());
+    }
+
+    private void cleanupOldRoleEntities(Utilisateur user, String oldRole) {
+        switch (oldRole.toUpperCase()) {
+            case "ADMIN":
+                adminRepository.findByUtilisateur(user).ifPresent(adminRepository::delete);
+                // Les admins sont aussi des agents, donc supprimer l'entité Agent
+                agentRepository.findByUtilisateur(user).ifPresent(agentRepository::delete);
+                break;
+            case "SUPPORT":
+                supportRepository.findByUtilisateur(user).ifPresent(supportRepository::delete);
+                // Les supports sont aussi des agents, donc supprimer l'entité Agent
+                agentRepository.findByUtilisateur(user).ifPresent(agentRepository::delete);
+                break;
+            case "AGENT":
+                agentRepository.findByUtilisateur(user).ifPresent(agentRepository::delete);
+                break;
+        }
+    }
+
+    private void createNewRoleEntities(Utilisateur user, String newRole) {
+        switch (newRole) {
+            case "ADMIN":
+                // Créer l'entité Admin
+                Admin admin = Admin.builder()
+                        .utilisateur(user)
+                        .build();
+                adminRepository.save(admin);
+
+                // Créer aussi l'entité Agent (car Admin hérite d'Agent)
+                Agent adminAgent = Agent.builder()
+                        .utilisateur(user)
+                        .build();
+                agentRepository.save(adminAgent);
+                break;
+
+            case "SUPPORT":
+                // Créer l'entité Support
+                Support support = Support.builder()
+                        .utilisateur(user)
+                        .build();
+                supportRepository.save(support);
+
+                // Créer aussi l'entité Agent (car Support hérite d'Agent)
+                Agent supportAgent = Agent.builder()
+                        .utilisateur(user)
+                        .build();
+                agentRepository.save(supportAgent);
+                break;
+
+            case "AGENT":
+                // Créer seulement l'entité Agent
+                Agent agent = Agent.builder()
+                        .utilisateur(user)
+                        .build();
+                agentRepository.save(agent);
+                break;
+        }
+    }
+
+    // Méthode pour réinitialiser le mot de passe d'un utilisateur
+    @Transactional
+    public void resetUserPassword(Integer userId) throws Exception {
+        Utilisateur user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        // Générer un nouveau mot de passe temporaire
+        String newTemporaryPassword = generateTemporaryPassword();
+
+        // Mettre à jour le mot de passe
+        user.setPassword(passwordEncoder.encode(newTemporaryPassword));
+        user.setUsingTemporaryPassword(true);
+
+        userRepository.save(user);
+
+        // Envoyer l'email avec le nouveau mot de passe
+        String roleName = user.getRoles().isEmpty() ? "USER" : user.getRoles().get(0).getName();
+        sendWelcomeEmail(user.getEmail(), user.getFirstname() + " " + user.getLastname(),
+                newTemporaryPassword, roleName);
+    }
+
+    // Méthode pour activer/désactiver un utilisateur
+    @Transactional
+    public void toggleUserStatus(Integer userId, boolean enabled) {
+        Utilisateur user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        user.setEnabled(enabled);
+        userRepository.save(user);
     }
 
 }

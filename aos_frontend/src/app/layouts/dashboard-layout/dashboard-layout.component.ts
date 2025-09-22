@@ -53,18 +53,30 @@ import { User, UserRole } from '../../models/user.model';
               </a>
 
               <!-- Requests -->
-              <a mat-list-item routerLink="/admin/requests" routerLinkActive="active" class="sidebar-link">
+              <a mat-list-item routerLink="/admin/requests" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
                 <mat-icon matListItemIcon>assignment</mat-icon>
                 <span matListItemTitle>Demandes</span>
               </a>
 
               <!-- Complaints -->
-              <a mat-list-item routerLink="/admin/complaints" routerLinkActive="active" class="sidebar-link">
+              <a mat-list-item routerLink="/admin/complaints" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
                 <mat-icon matListItemIcon>support_agent</mat-icon>
                 <span matListItemTitle>Réclamations</span>
               </a>
 
-               <a mat-list-item routerLink="/admin/contact" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+              <!-- Requests -->
+              <a mat-list-item routerLink="/admin/my-requests" routerLinkActive="active" class="sidebar-link" >
+                <mat-icon matListItemIcon>assignment</mat-icon>
+                <span matListItemTitle>Mes demandes</span>
+              </a>
+
+              <!-- Complaints -->
+              <a mat-list-item routerLink="/admin/my-complaints" routerLinkActive="active" class="sidebar-link">
+                <mat-icon matListItemIcon>support_agent</mat-icon>
+                <span matListItemTitle>Mes réclamations</span>
+              </a>
+
+               <a mat-list-item routerLink="/admin/contact" routerLinkActive="active" class="sidebar-link" >
                 <mat-icon matListItemIcon>message</mat-icon>
                 <span matListItemTitle>Messages de contact</span>
               </a>
@@ -79,7 +91,7 @@ import { User, UserRole } from '../../models/user.model';
               </a>
 
               <!-- News Management (Admin only) -->
-              <a mat-list-item routerLink="/admin/news" routerLinkActive="active" class="sidebar-link" *ngIf="isAdmin()">
+              <a mat-list-item routerLink="/admin/news" routerLinkActive="active" class="sidebar-link" >
                 <mat-icon matListItemIcon>article</mat-icon>
                 <span matListItemTitle>Actualités</span>
               </a>
