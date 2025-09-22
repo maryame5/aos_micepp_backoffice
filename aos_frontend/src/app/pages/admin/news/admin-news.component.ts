@@ -163,7 +163,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
         </div>
 
         <form [formGroup]="documentForm" (ngSubmit)="onSubmit()" class="dialog-body">
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field  class="full-width">
             <mat-label>Titre</mat-label>
             <input matInput formControlName="titre" placeholder="Entrez le titre de l'actualité" required>
             <mat-error *ngIf="documentForm.get('titre')?.invalid && documentForm.get('titre')?.touched">
@@ -171,7 +171,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field  class="full-width">
             <mat-label>Description</mat-label>
             <quill-editor
               formControlName="description"
@@ -184,7 +184,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
             </mat-error>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
+          <mat-form-field  class="full-width">
             <mat-label>Type</mat-label>
             <mat-select formControlName="type" required>
               <mat-option value="news">Actualité</mat-option>

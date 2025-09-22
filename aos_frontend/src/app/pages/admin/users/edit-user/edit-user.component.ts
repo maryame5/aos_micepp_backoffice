@@ -55,7 +55,7 @@ import { User, UserDTO } from '../../../../models/user.model';
             </mat-card-header>
             <mat-card-content>
               <div class="form-grid">
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Prénom</mat-label>
                   <input matInput formControlName="firstname" placeholder="Prénom">
                   <mat-error *ngIf="userForm.get('firstname')?.hasError('required')">
@@ -63,7 +63,7 @@ import { User, UserDTO } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Nom</mat-label>
                   <input matInput formControlName="lastname" placeholder="Nom de famille">
                   <mat-error *ngIf="userForm.get('lastname')?.hasError('required')">
@@ -71,7 +71,7 @@ import { User, UserDTO } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Email</mat-label>
                   <input matInput type="email" formControlName="email" placeholder="email@exemple.com">
                   <mat-error *ngIf="userForm.get('email')?.hasError('required')">
@@ -82,7 +82,7 @@ import { User, UserDTO } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Téléphone</mat-label>
                   <input matInput formControlName="phone" placeholder="+212 6XX XXX XXX">
                   <mat-error *ngIf="userForm.get('phone')?.hasError('pattern')">
@@ -90,7 +90,7 @@ import { User, UserDTO } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>CIN</mat-label>
                   <input matInput formControlName="cin" placeholder="CIN">
                   <mat-error *ngIf="userForm.get('cin')?.hasError('required')">
@@ -101,7 +101,7 @@ import { User, UserDTO } from '../../../../models/user.model';
                   </mat-error>
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Matricule</mat-label>
                   <input matInput formControlName="matricule" placeholder="Matricule">
                   <mat-error *ngIf="userForm.get('matricule')?.hasError('required')">
@@ -118,12 +118,12 @@ import { User, UserDTO } from '../../../../models/user.model';
             </mat-card-header>
             <mat-card-content>
               <div class="form-grid">
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Département</mat-label>
                   <input matInput formControlName="department" placeholder="Département">
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field >
                   <mat-label>Rôle</mat-label>
                   <mat-select formControlName="role">
                     <mat-option value="AGENT">Agent</mat-option>
