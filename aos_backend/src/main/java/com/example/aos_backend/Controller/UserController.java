@@ -188,10 +188,22 @@ public class UserController {
                 demandeRepository.saveAll(assignedDemandes);
             }
 
-            // Check if user has related reclamations BEFORE attempting deletion
-            if (reclamationRepository.existsByUtilisateur(user)) {
-                logger.warn("Cannot delete user with id {} because of existing reclamations", id);
-                return ResponseEntity.status(409).build(); // Conflict status
+            // Check and unassign related reclamations (as assigned user)
+            List<com.example.aos_backend.user.Reclamation> assignedReclamations = reclamationRepository
+                    .findByAssignedTo(user);
+            if (!assignedReclamations.isEmpty()) {
+                logger.info("Unassigning {} reclamations assigned to user {}", assignedReclamations.size(), id);
+                // Set assignedTo to null for these reclamations instead of deleting them
+                assignedReclamations.forEach(reclamation -> reclamation.setAssignedTo(null));
+                reclamationRepository.saveAll(assignedReclamations);
+            }
+
+            // Check and delete related reclamations
+            List<com.example.aos_backend.user.Reclamation> userReclamations = reclamationRepository
+                    .findByUtilisateur(user);
+            if (!userReclamations.isEmpty()) {
+                logger.info("Deleting {} reclamations related to user {}", userReclamations.size(), id);
+                reclamationRepository.deleteAll(userReclamations);
             }
 
             // Delete user from role-specific tables
