@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 
 export interface Notification {
-  id: string;
+  id: number;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: string;
   isRead: boolean;
-  createdAt: Date;
-  userId: string;
+  createdAt: string;
+  user: any;
   actionUrl?: string;
 }
 
@@ -19,8 +19,10 @@ export interface Notification {
 export class NotificationService {
   private apiUrl = `http://localhost:8089/AOS_MICEPP/notifications`;
   private unreadCountSubject = new BehaviorSubject<number>(0);
-  
+  private notificationsSubject = new BehaviorSubject<Notification[]>([]);
+
   public unreadCount$ = this.unreadCountSubject.asObservable();
+  public notifications$ = this.notificationsSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 

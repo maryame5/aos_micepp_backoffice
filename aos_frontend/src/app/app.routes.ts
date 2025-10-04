@@ -149,6 +149,12 @@ export const routes: Routes = [
         data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
+        path: 'notifications',
+        loadComponent: () => import('./pages/admin/notifications/notifications.component').then(m => m.NotificationsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

@@ -12,6 +12,7 @@ import { User, UserRole } from '../../../models/user.model';
 import { Router } from '@angular/router';
 import { MatListModule } from "@angular/material/list";
 import { ThemeService } from '../../../services/theme.service';
+import { NotificationService, Notification } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-header',
@@ -52,9 +53,27 @@ import { ThemeService } from '../../../services/theme.service';
         </mat-menu>
 
         <!-- Notifications -->
-        <button mat-icon-button class="notification-btn">
-          <mat-icon matBadge="3" matBadgeColor="accent">notifications</mat-icon>
+        <button mat-icon-button class="notification-btn" [matMenuTriggerFor]="notificationMenu">
+          <mat-icon matBadge="{{ unreadCount }}" matBadgeColor="accent">notifications</mat-icon>
         </button>
+        <mat-menu #notificationMenu="matMenu">
+          <ng-container *ngIf="notifications.length > 0; else noNotifications">
+             <button mat-menu-item *ngFor="let notification of notifications | slice:0:3" (click)="openNotification(notification)" [ngClass]="{'read-notification': notification.isRead}">
+              <mat-icon>{{ getIcon(notification.type) }}</mat-icon>
+              <div class="notification-content">
+                <span class="notification-title">{{ notification.title }}</span>
+                <span class="notification-message">{{ notification.message | slice:0:50 }}{{ notification.message.length > 50 ? '...' : '' }}</span>
+              </div>
+            </button>
+            <button mat-menu-item *ngIf="notifications.length > 3" (click)="navigateToNotifications()">
+              <span>Afficher plus</span>
+            </button>
+            
+          </ng-container>
+          <ng-template #noNotifications>
+            <button mat-menu-item disabled>Aucune notification</button>
+          </ng-template>
+        </mat-menu>
 
         <!-- Dark Mode Toggle -->
         <button mat-icon-button (click)="toggleDarkMode()" [attr.aria-label]="'Toggle dark mode'" class="dark-mode-toggle-btn">
@@ -160,11 +179,36 @@ import { ThemeService } from '../../../services/theme.service';
       color: #6b7280;
     }
 
+    .read-notification {
+      opacity: 0.6;
+    }
+
+    .notification-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .notification-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .notification-message {
+      font-size: 0.75rem;
+      color: #6b7280;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     @media (max-width: 768px) {
       .header-title span {
         display: none;
       }
-      
+
       .user-info {
         display: none;
       }
@@ -177,17 +221,64 @@ export class HeaderComponent implements OnInit {
   currentUser: User | null = null;
   availableLanguages = this.languageService.getAvailableLanguages();
 
+  unreadCount: number = 0;
+  notifications: Notification[] = [];
+
   constructor(
     private authService: AuthService,
     private languageService: LanguageService,
     private router: Router,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
+    this.loadNotifications();
+    this.loadUnreadCount();
+  }
+
+  loadNotifications(): void {
+    this.notificationService.getUserNotifications().subscribe(notifications => {
+      this.notifications = notifications;
+    });
+  }
+
+  loadUnreadCount(): void {
+    this.notificationService.getUnreadCount().subscribe(count => {
+      this.unreadCount = count;
+    });
+  }
+
+  openNotification(notification: Notification): void {
+    console.log('Opening notification:', notification);
+    console.log('Action URL:', notification.actionUrl);
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.id.toString()).subscribe(() => {
+        notification.isRead = true;
+        this.loadUnreadCount();
+      });
+    }
+    if (notification.actionUrl) {
+      // Fix for 404: ensure actionUrl is a valid route path
+      const validUrl = notification.actionUrl.startsWith('/') ? notification.actionUrl : '/' + notification.actionUrl;
+      console.log('Navigating to:', validUrl);
+      this.router.navigateByUrl(validUrl);
+    } else {
+      console.log('No actionUrl for notification');
+    }
+  }
+
+  getIcon(type: string): string {
+    switch (type) {
+      case 'info': return 'info';
+      case 'success': return 'check_circle';
+      case 'warning': return 'warning';
+      case 'error': return 'error';
+      default: return 'notifications';
+    }
   }
 
   toggleDarkMode(): void {
@@ -228,6 +319,10 @@ export class HeaderComponent implements OnInit {
 
   navigateToSettings(): void {
     this.router.navigate(['/settings']);
+  }
+
+  navigateToNotifications(): void {
+    this.router.navigate(['/admin/notifications']);
   }
 
   logout(): void {

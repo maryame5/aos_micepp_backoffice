@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.aos_backend.Service.DemandeService;
+import com.example.aos_backend.Notification.NotificationService;
+import com.example.aos_backend.user.NotificationType;
 import com.example.aos_backend.Util.DocumentUtil;
 import com.example.aos_backend.dto.DemandeDTO;
 import com.example.aos_backend.dto.UpdateDemandeRequest;
@@ -30,6 +32,7 @@ import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.user.Demande;
 import com.example.aos_backend.user.DocumentJustificatif;
 import com.example.aos_backend.user.Utilisateur;
+import com.example.aos_backend.Repository.UtilisateurRepository;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 public class DemandeController {
     // Inject the DemandeService
     private final DemandeService demandeService;
+    private final NotificationService notificationService;
+    private final UtilisateurRepository utilisateurRepository;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -151,6 +156,21 @@ public class DemandeController {
             log.info("Controller: Calling demandeService.assignRequest");
             DemandeDTO updatedDemande = demandeService.assignRequest(id, userId);
             log.info("Controller: Assign request successful");
+
+            // Send notification to the assigned user
+            if (updatedDemande.getAssignedToId() != null) {
+                Utilisateur assignedUser = utilisateurRepository.findById(updatedDemande.getAssignedToId())
+                        .orElse(null);
+                if (assignedUser != null) {
+                    notificationService.createAndSendNotification(
+                            assignedUser,
+                            "Nouvelle demande assignée",
+                            "Une nouvelle demande vous a été assignée: " + updatedDemande.getDescription(),
+                            NotificationType.info,
+                            "/admin/requests/" + id);
+                }
+            }
+
             return ResponseEntity.ok(updatedDemande);
         } catch (IllegalArgumentException e) {
             log.error("Controller: IllegalArgumentException - {}", e.getMessage());
@@ -211,6 +231,9 @@ public class DemandeController {
             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         try {
             DemandeDTO updatedDemande = demandeService.updateDemande(id, request, files);
+
+            notificationService.notifyUpdateDemande(updatedDemande);
+
             return ResponseEntity.ok(updatedDemande);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
