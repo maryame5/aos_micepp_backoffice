@@ -171,6 +171,9 @@ public class DemandeController {
                 }
             }
 
+            // Send notification to the demande creator
+            notificationService.notifyAssignDemande(updatedDemande);
+
             return ResponseEntity.ok(updatedDemande);
         } catch (IllegalArgumentException e) {
             log.error("Controller: IllegalArgumentException - {}", e.getMessage());
@@ -232,7 +235,17 @@ public class DemandeController {
         try {
             DemandeDTO updatedDemande = demandeService.updateDemande(id, request, files);
 
-            notificationService.notifyUpdateDemande(updatedDemande);
+            if (request.getStatut() != null) {
+                if ("ACCEPTEE".equals(request.getStatut())) {
+                    notificationService.notifyFinishDemande(updatedDemande, "ACCEPTED");
+                } else if ("REFUSEE".equals(request.getStatut())) {
+                    notificationService.notifyFinishDemande(updatedDemande, "REFUSED");
+                } else {
+                    notificationService.notifyUpdateDemande(updatedDemande);
+                }
+            } else {
+                notificationService.notifyUpdateDemande(updatedDemande);
+            }
 
             return ResponseEntity.ok(updatedDemande);
         } catch (IllegalArgumentException e) {

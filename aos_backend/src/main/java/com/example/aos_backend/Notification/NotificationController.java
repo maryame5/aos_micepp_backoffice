@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -109,5 +111,24 @@ public class NotificationController {
         }
         notificationRepository.delete(notification);
         return ResponseEntity.ok().build();
+    }
+
+    // Endpoint to receive notifications from external systems (e.g.,
+    // aos_micepp_public)
+    @PostMapping("/external")
+    public ResponseEntity<Void> receiveExternalNotification(@RequestBody Map<String, Object> notificationData) {
+        try {
+            String type = (String) notificationData.get("type");
+            if ("demande_created".equals(type)) {
+                Long demandeId = ((Number) notificationData.get("demandeId")).longValue();
+                String message = (String) notificationData.get("message");
+
+                // Send notification to all admins
+                notificationService.notifyAdminNewDemande(demandeId, message);
+            }
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
