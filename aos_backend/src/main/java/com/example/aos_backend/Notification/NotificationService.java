@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.aos_backend.Repository.AdminRepository;
 import com.example.aos_backend.Repository.NotificationRepository;
@@ -29,6 +32,14 @@ public class NotificationService {
     private SimpMessagingTemplate template;
     @Autowired
     private RestTemplate restTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
+
+    @Value("${app.external.notifications.url:http://localhost:8090}")
+    private String aosMiceppPublicUrl;
+
+    @Value("${app.external.notifications.endpoint:/AOS_MICEPP/notifications/external}")
+    private String externalNotificationsEndpoint;
 
     private final NotificationRepository notificationRepository;
     private final AdminRepository adminRepository;
@@ -96,7 +107,7 @@ public class NotificationService {
                     .message("Une nouvelle demande a été créée: " + demande.getDescription())
                     .type(NotificationType.info)
                     .isRead(false)
-                    .actionUrl("/admin/requests/" + demande.getId())
+                    .actionUrl("/admin/request/" + demande.getId())
                     .build();
 
             notificationRepository.save(notification);
@@ -133,8 +144,7 @@ public class NotificationService {
     }
 
     public void notifyFinishDemande(DemandeDTO demande, String status) {
-        // No local notification for user in aos_micepp_back for finish
-        // Only send external notification to aos_micepp_public
+
         sendExternalNotification(demande, status.toLowerCase());
     }
 
@@ -144,20 +154,18 @@ public class NotificationService {
 
     private void sendExternalNotification(DemandeDTO demande, String status) {
         try {
-            String aosMiceppPublicUrl = "http://localhost:8090"; // aos_micepp_public runs on 8090
-            String endpoint = "/AOS_MICEPP/notifications/external";
-
             java.util.Map<String, Object> payload = new java.util.HashMap<>();
             payload.put("type", "demande_" + status);
             payload.put("demandeId", demande.getId());
             payload.put("userId", demande.getUtilisateurId());
             payload.put("message", "Votre demande a été " + status + ": " + demande.getDescription());
             payload.put("actionUrl", "/agent/requests/" + demande.getId());
-
-            restTemplate.postForEntity(aosMiceppPublicUrl + endpoint, payload, Void.class);
+            String target = aosMiceppPublicUrl + externalNotificationsEndpoint;
+            logger.info("Sending external notification to {} for demande {} (status={})", target, demande.getId(),
+                    status);
+            restTemplate.postForEntity(target, payload, Void.class);
         } catch (Exception e) {
-            // Log error, but don't fail the operation
-            System.err.println("Failed to send external notification: " + e.getMessage());
+            logger.error("Failed to send external notification for demande {}: {}", demande.getId(), e.getMessage(), e);
         }
     }
 
@@ -172,7 +180,7 @@ public class NotificationService {
                     .message(message)
                     .type(NotificationType.info)
                     .isRead(false)
-                    .actionUrl("/admin/requests/" + demandeId)
+                    .actionUrl("/admin/request/" + demandeId)
                     .build();
 
             notificationRepository.save(notification);

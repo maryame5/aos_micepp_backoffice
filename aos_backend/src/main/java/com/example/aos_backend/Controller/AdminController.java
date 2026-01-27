@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.aos_backend.Service.LogService;
 import com.example.aos_backend.Service.UserManagementService;
 import com.example.aos_backend.dto.UserDTO;
 import com.example.aos_backend.Controller.RegisterationRequest;
+import com.example.aos_backend.user.Log;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
     private final UserManagementService userManagementService;
+    private final LogService logService;
 
     @PostMapping("users/register-user")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
@@ -36,6 +39,13 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Registration failed: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/logs")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<List<Log>> getAllLogs() {
+        List<Log> logs = logService.getAllLogs();
+        return ResponseEntity.ok(logs);
     }
 
 }

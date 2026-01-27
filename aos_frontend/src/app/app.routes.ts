@@ -155,6 +155,12 @@ export const routes: Routes = [
         data: { roles: [UserRole.SUPPORT, UserRole.ADMIN] }
       },
       {
+        path: 'rapports',
+        loadComponent: () => import('./pages/admin/rapports/rapports.component').then(m => m.RapportsComponent),
+        canActivate: [AuthGuard],
+        data: { roles: [UserRole.ADMIN, UserRole.SUPPORT] }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

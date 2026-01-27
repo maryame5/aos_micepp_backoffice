@@ -99,7 +99,7 @@ import { User, UserRole } from '../../models/user.model';
               <mat-divider></mat-divider>
 
               <!-- Reports -->
-              <a mat-list-item routerLink="/admin/reports" routerLinkActive="active" class="sidebar-link">
+              <a mat-list-item routerLink="/admin/rapports" routerLinkActive="active" class="sidebar-link">
                 <mat-icon matListItemIcon>analytics</mat-icon>
                 <span matListItemTitle>Rapports</span>
               </a>

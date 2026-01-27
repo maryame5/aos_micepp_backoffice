@@ -127,4 +127,4 @@ Tous endpoints privés nécessitent `Authorization: Bearer <JWT>`.
 - **Issues** : GitHub Issues.
 - **Contributions** : PR avec tests.
 
-© 2025 AOS MICEPP. Tous droits réservés.
+© 2025 AOS MICEPP Developed by EL Khalfi Maryame. Tous droits réservés.

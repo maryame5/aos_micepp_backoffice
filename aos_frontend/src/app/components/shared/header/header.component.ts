@@ -97,6 +97,7 @@ import { NotificationService, Notification } from '../../../services/notificatio
             <mat-icon>settings</mat-icon>
             <span>Paramètres</span>
           </button>
+          
           <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()" class="logout-btn">
             <mat-icon>logout</mat-icon>
@@ -323,6 +324,10 @@ export class HeaderComponent implements OnInit {
 
   navigateToNotifications(): void {
     this.router.navigate(['/admin/notifications']);
+  }
+
+  navigateToRapports(): void {
+    this.router.navigate(['/admin/rapports']);
   }
 
   logout(): void {
